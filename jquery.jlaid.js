@@ -136,7 +136,7 @@ layout.max = function(matrix)
 	};
 	Laid.prototype.resize = function()
 	{
-		this.lines = { 0: {} };
+		this.lines = { 0: { 0: true } };
 		this.stack = [];
 
 		this.width = $(this.wrapper).width();
@@ -158,34 +158,34 @@ layout.max = function(matrix)
 	};
 	Laid.prototype.next = function(width, height)
 	{
-		var pos = [0, Laid.INFINITE];
+		var pos = [Laid.INFINITE, Laid.INFINITE];
 
 		for(var i in this.lines)
 		{
-			if(i > pos[1])
+			if(i >= pos[1])
 			{
 				continue;
 			}
-			if(this.empty(this.lines[i]))
-			{
-				return this.create(0, i, width, height);
-			}
 			for(var j in this.lines[i])
 			{
+				if(j > pos[0])
+				{
+					continue;
+				}
 				if(this.check(j, i, width, height))
 				{
-					pos = this.create(j, i, width, height);
+					pos = [j, i];
 				}
 			}
 		}
-		return pos;
+		return this.create(pos[0], pos[1], width, height);
 	}
 	Laid.prototype.check = function(x, y, width, height)
 	{
 		x = Number(x);
 		y = Number(y);
 
-		if(x + width > this.width)
+		if(x && x + width > this.width)
 		{
 			return false;
 		}
@@ -218,34 +218,26 @@ layout.max = function(matrix)
 
 		if(!this.lines[y + height])
 		{
-			this.lines[y + height] = { };
+			this.lines[y + height] = { 0: true };
 		}
-		this.lines[y][x + width] = true;
-
-		// check already existing higher Ys to inherit
-		// check already existing lower Ys to transfer
-
-		/*for(var i in this.lines[i])
-		{
-			for(j in this.lines[i])
-			{
-				this.lines[i][j] = true;
-			}
-		}*/
 		this.stack.push({ x: x, y: y, width: width, height: height });
 
-		return [x, y];
-	};
-	Laid.prototype.empty = function(obj)
-	{
-		for(var k in obj)
+		var item = null;
+
+		for(var i in this.stack)
 		{
-			if(obj.hasOwnProperty(k))
+			item = this.stack[i];
+
+			for(var j in this.lines)
 			{
-				return false;
+				if(j < item.y || j >= item.y + item.height)
+				{
+					continue;
+				}
+				this.lines[j][item.x + item.width] = true;
 			}
 		}
-		return true;
+		return [x, y];
 	};
 
 	/* plugin */
