@@ -154,7 +154,7 @@ layout.max = function(matrix)
 			$(this).css('top', pos[1]);
 		});
 		console.log(this.lines);
-		console.log(this.stack);
+		//console.log(this.stack);
 	};
 	Laid.prototype.next = function(width, height)
 	{
@@ -162,13 +162,17 @@ layout.max = function(matrix)
 
 		for(var i in this.lines)
 		{
-			if(i >= pos[1])
+			i = Number(i);
+
+			if(i > pos[1])
 			{
 				continue;
 			}
 			for(var j in this.lines[i])
 			{
-				if(j > pos[0])
+				j = Number(j);
+
+				if(j > pos[0] && i == pos[1])
 				{
 					continue;
 				}
@@ -182,9 +186,6 @@ layout.max = function(matrix)
 	}
 	Laid.prototype.check = function(x, y, width, height)
 	{
-		x = Number(x);
-		y = Number(y);
-
 		if(x && x + width > this.width)
 		{
 			return false;
@@ -213,9 +214,6 @@ layout.max = function(matrix)
 	};
 	Laid.prototype.create = function(x, y, width, height)
 	{
-		x = Number(x);
-		y = Number(y);
-
 		if(!this.lines[y + height])
 		{
 			this.lines[y + height] = { 0: true };
@@ -230,11 +228,11 @@ layout.max = function(matrix)
 
 			for(var j in this.lines)
 			{
-				if(j < item.y || j >= item.y + item.height)
+				//if(j >= item.y && j < item.y + item.height)
+				if(1) // test
 				{
-					continue;
+					this.lines[j][item.x + item.width] = true;
 				}
-				this.lines[j][item.x + item.width] = true;
 			}
 		}
 		return [x, y];
