@@ -69,18 +69,49 @@
 
 		this.width = $(this.wrapper).width();
 
-		var that = this;
+		var children = $.makeArray(this.children);
 
-		this.children.each(function()
+		var next, x, y, that = this;
+
+		while(children.length)
 		{
-			var width = $.data(this, 'width');
-			var inner = $.data(this, 'inner');
+			x = y = this.INFINITE;
 
-			var block = that.next(width, $(this).outerHeight());
+			for(var i in children)
+			{
+				var block = that.next($.data(children[i], 'width'), $(children[i]).outerHeight(), true);
 
-			$(this).css('left', block.x);
-			$(this).css('top', block.y);
-		});
+				if(block.y >= y)
+				{
+					continue;
+				}
+				if(block.x >= x && block.y == y)
+				{
+					continue;
+				}
+				next = children[i];
+				x = block.x;
+				y = block.y;
+			};
+
+			this.append(x, y, $.data(next, 'width'), $(next).outerHeight());
+
+			children.splice(children.indexOf(next), 1); // IE
+
+			$(next).css('left', x);
+			$(next).css('top', y);
+		}
+
+		//this.children.each(function()
+		//{
+		//	var width = $.data(this, 'width');
+		//	var inner = $.data(this, 'inner');
+		//
+		//	var block = that.next(width, $(this).outerHeight());
+		//
+		//	$(this).css('left', block.x);
+		//	$(this).css('top', block.y);
+		//});
 		//console.log(this.lines);
 		//
 		//console.log('lines ' + this.lines.length);
@@ -94,7 +125,7 @@
 		//	});
 		//});
 	};
-	Laid.prototype.next = function(width, height)
+	Laid.prototype.next = function(width, height, test)
 	{
 		var next = { x: Laid.INFINITE, y: Laid.INFINITE }, that = this;
 
@@ -122,6 +153,10 @@
 				}
 			});
 		});
+		if(test)
+		{
+			return { x: next.x, y: next.y, width: width, height: height }; // you have this in two places
+		}
 		return this.append(next.x, next.y, width, height);
 	}
 	Laid.prototype.check = function(x, y, width, height)

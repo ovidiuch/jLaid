@@ -21,7 +21,7 @@ html, body {
 	list-style-type: none;
 }
 .grid li {
-	width: 250px;
+	/*width: 250px;*/
 	padding: 0 20px 20px 0;
 	float: left;
 }
@@ -29,6 +29,7 @@ html, body {
 	padding: 8px 10px;
 	background: #fff;
 	box-shadow: 4px 4px rgba(0, 0, 0, 0.15);
+	overflow: hidden;
 }
 	</style>
 
@@ -38,9 +39,18 @@ html, body {
 	<script>
 $(function()
 {
-	$('.grid li').each(function()
+	var arr =
+	[
+		[380, 180],
+		[180, 380]
+	];
+
+	$('.grid li p').each(function()
 	{
-		$(this).width(Math.round(Math.random() * 1) * 200 + 180);
+		var s = arr[Math.round(Math.random())];
+console.log(s);
+		$(this).width(s[0] - 20);
+		$(this).height(s[1] - 16);
 	});
 	var t = (new Date().getTime());
 	$('.grid').laid();
