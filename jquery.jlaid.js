@@ -136,7 +136,7 @@ layout.max = function(matrix)
 	};
 	Laid.prototype.resize = function()
 	{
-		this.lines = { 0: { 0: true } };
+		this.lines = { 0: { 0: 0 } };
 		this.stack = [];
 
 		this.width = $(this.wrapper).width();
@@ -158,27 +158,27 @@ layout.max = function(matrix)
 	};
 	Laid.prototype.next = function(width, height)
 	{
-		var pos = [Laid.INFINITE, Laid.INFINITE];
+		var pos = [Laid.INFINITE, Laid.INFINITE], x, y;
 
 		for(var i in this.lines)
 		{
-			i = Number(i);
+			y = Number(i);
 
-			if(i > pos[1])
+			if(y > pos[1])
 			{
 				continue;
 			}
 			for(var j in this.lines[i])
 			{
-				j = Number(j);
+				x = Number(j) + this.lines[i][j];
 
-				if(j > pos[0] && i == pos[1])
+				if(x > pos[0] && y == pos[1])
 				{
 					continue;
 				}
-				if(this.check(j, i, width, height))
+				if(this.check(x, y, width, height))
 				{
-					pos = [j, i];
+					pos = [x, y];
 				}
 			}
 		}
@@ -189,6 +189,15 @@ layout.max = function(matrix)
 		if(x && x + width > this.width)
 		{
 			return false;
+		}
+		for(var i in this.lines[y])
+		{
+			if(Number(i) == x)
+			{
+				console.log(this.stack.length);
+				console.log(i + ' ' + x);
+				return false;
+			}
 		}
 		for(var i in this.stack)
 		{
@@ -216,7 +225,7 @@ layout.max = function(matrix)
 	{
 		if(!this.lines[y + height])
 		{
-			this.lines[y + height] = { 0: true };
+			this.lines[y + height] = { 0: 0 };
 		}
 		this.stack.push({ x: x, y: y, width: width, height: height });
 
@@ -228,10 +237,10 @@ layout.max = function(matrix)
 
 			for(var j in this.lines)
 			{
-				//if(j >= item.y && j < item.y + item.height)
-				if(1) // test
+				if(j < item.y + item.height)
+				//if(1) // test
 				{
-					this.lines[j][item.x + item.width] = true;
+					this.lines[j][item.x] = item.width;
 				}
 			}
 		}
