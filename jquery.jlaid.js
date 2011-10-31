@@ -1,86 +1,3 @@
-/*var layout = {};
-
-layout.build = function(content)
-{
-	this.content = content;
-	this.children = $(content).find('> li');
-
-	if(!this.children.length)
-	{
-		return false;
-	}
-	if(!this.unit)
-	{
-		var first = this.children.first();
-
-		this.unit = first.outerWidth();
-		this.padding = first.outerWidth() - first.width();
-	}
-	this.width = $(content).width();
-
-	var cols = Math.round(this.width / this.unit);
-
-	this.position(Math.floor(this.width / cols), cols);
-};
-
-layout.position = function(unit, cols)
-{
-	var that = this;
-	var matrix = this.emptyMatrix(cols);
-
-	$(this.children).each(function()
-	{
-		var col = that.min(matrix);
-
-		$(this).css('width', unit - that.padding);
-
-		$(this).css('position', 'absolute');
-		$(this).css('top', col[1]);
-		$(this).css('left', col[0] * unit);
-
-		matrix[col[0]] += $(this).outerHeight();
-	});
-
-	$(this.content).height(this.max(matrix));
-};
-
-layout.emptyMatrix = function(cols)
-{
-	var matrix = [];
-	for(var i = 0; i < cols; i++)
-	{
-		matrix[i] = 0;
-	}
-	return matrix;
-};
-
-layout.min = function(matrix)
-{
-	var j = -1, min = 999999;
-	for(var i = 0; i < matrix.length; i++)
-	{
-		if(matrix[i] < min)
-		{
-			j = i;
-			min = matrix[i];
-		}
-	}
-	return j != -1 ? [j, min] : [0, 0];
-};
-
-layout.max = function(matrix)
-{
-	var max = 0;
-	for(var i = 0; i < matrix.length; i++)
-	{
-		if(matrix[i] > max)
-		{
-			max = matrix[i];
-		}
-	}
-	return max;
-};*/
-
 ;(function($, window, document, undefined)
 {
 	/* Layout Grid constructor */
@@ -110,7 +27,7 @@ layout.max = function(matrix)
 		this.init();
 	};
 
-	/* static */
+	/* Laid static */
 
 	Laid.defaults =
 	{
@@ -119,7 +36,7 @@ layout.max = function(matrix)
 	};
 	Laid.INFINITE = 999999;
 
-	/* prototype */
+	/* Laid prototype */
 
 	Laid.prototype.init = function()
 	{
@@ -134,9 +51,20 @@ layout.max = function(matrix)
 
 		this.resize();
 	};
+	Laid.prototype.each = function(callback)
+	{
+		for(var i = 0; i < this.lines.length; i++)
+		{
+			if(callback.call(this.lines[i], i, this.lines[i]) === false)
+			{
+				return false;
+			}
+		}
+		return true;
+	};
 	Laid.prototype.resize = function()
 	{
-		this.lines = { 0: { 0: 0 } };
+		this.lines = [ new Line() ];
 		this.stack = [];
 
 		this.width = $(this.wrapper).width();
@@ -148,41 +76,53 @@ layout.max = function(matrix)
 			var width = $.data(this, 'width');
 			var inner = $.data(this, 'inner');
 
-			var pos = that.next(width, $(this).outerHeight());
+			var block = that.next(width, $(this).outerHeight());
 
-			$(this).css('left', pos[0]);
-			$(this).css('top', pos[1]);
+			$(this).css('left', block.x);
+			$(this).css('top', block.y);
 		});
-		console.log(this.lines);
-		//console.log(this.stack);
+		//console.log(this.lines);
+		//
+		//console.log('lines ' + this.lines.length);
+		//this.each(function(i)
+		//{
+		//	console.log(i + ' ' + this.y);
+		//
+		//	this.each(function(j)
+		//	{
+		//		console.log('	' + j + ' ' + this.x + ' ' + this.y + ' ' + this.width + ' ' + this.height);
+		//	});
+		//});
 	};
 	Laid.prototype.next = function(width, height)
 	{
-		var pos = [Laid.INFINITE, Laid.INFINITE], x, y;
+		var next = { x: Laid.INFINITE, y: Laid.INFINITE }, that = this;
 
-		for(var i in this.lines)
+		this.each(function(i, line)
 		{
-			y = Number(i);
-
-			if(y > pos[1])
+			if(this.y > next.y)
 			{
-				continue;
+				return;
 			}
-			for(var j in this.lines[i])
+			if(that.check(0, this.y, width, height))
 			{
-				x = Number(j) + this.lines[i][j];
-
-				if(x > pos[0] && y == pos[1])
-				{
-					continue;
-				}
-				if(this.check(x, y, width, height))
-				{
-					pos = [x, y];
-				}
+				next.x = 0;
+				next.y = this.y;
 			}
-		}
-		return this.create(pos[0], pos[1], width, height);
+			this.each(function(j, block)
+			{
+				if(this.x > next.x && this.y == next.y)
+				{
+					return;
+				}
+				if(that.check(this.x + this.width, line.y, width, height))
+				{
+					next.x = this.x + this.width;
+					next.y = line.y;
+				}
+			});
+		});
+		return this.append(next.x, next.y, width, height);
 	}
 	Laid.prototype.check = function(x, y, width, height)
 	{
@@ -190,61 +130,115 @@ layout.max = function(matrix)
 		{
 			return false;
 		}
-		for(var i in this.lines[y])
+		return this.each(function(i, line)
 		{
-			if(Number(i) == x)
+			if(this.y > y + height)
 			{
-				console.log(this.stack.length);
-				console.log(i + ' ' + x);
+				return true;
+			}
+			return this.each(function(j, block)
+			{
+				if(x >= this.x + this.width)
+				{
+					return true;
+				}
+				if(x + width <= this.x)
+				{
+					return true;
+				}
+				if(y >= this.y + this.height)
+				{
+					return true;
+				}
+				if(y + height <= this.y)
+				{
+					return true;
+				}
+				return false;
+			});
+		});
+	};
+	Laid.prototype.append = function(x, y, width, height)
+	{
+		var block, index = 0, that = this;
+
+		this.stack.push(block =
+		{
+			x: x, y: y, width: width, height: height
+		});
+		this.each(function(i, line)
+		{
+			if(this.y >= y + height)
+			{
+				if(this.y == y + height)
+				{
+					index = -1;
+				}
+				return;
+			}
+			index = i + 1;
+		});
+		if(index != -1)
+		{
+			this.lines.splice(index, 0, new Line(y + height));
+		}
+		for(var k = 0; k < this.stack.length; k++)
+		{
+			this.each(function(i, line)
+			{
+				if(this.y < that.stack[k].y + that.stack[k].height)
+				{
+					this.insert(that.stack[k]);
+				}
+			});
+		}
+		return block;
+	};
+
+	/* Line constructor */
+
+	var Line = function(y)
+	{
+		this.y = y || 0;
+	};
+
+	/* Line prototype */
+
+	Line.prototype = [];
+
+	Line.prototype.each = function(callback)
+	{
+		for(var i = 0; i < this.length; i++)
+		{
+			if(callback.call(this[i], i, this[i]) === false)
+			{
 				return false;
 			}
 		}
-		for(var i in this.stack)
-		{
-			if(this.stack[i].x + this.stack[i].width <= x)
-			{
-				continue;
-			}
-			if(this.stack[i].x >= x + width)
-			{
-				continue;
-			}
-			if(this.stack[i].y + this.stack[i].height <= y)
-			{
-				continue;
-			}
-			if(this.stack[i].y >= y + height)
-			{
-				continue;
-			}
-			return false;
-		}
 		return true;
 	};
-	Laid.prototype.create = function(x, y, width, height)
+	Line.prototype.insert = function(block)
 	{
-		if(!this.lines[y + height])
+		var index = 0;
+
+		this.each(function(j)
 		{
-			this.lines[y + height] = { 0: 0 };
-		}
-		this.stack.push({ x: x, y: y, width: width, height: height });
-
-		var item = null;
-
-		for(var i in this.stack)
-		{
-			item = this.stack[i];
-
-			for(var j in this.lines)
+			if(this == block)
 			{
-				if(j < item.y + item.height)
-				//if(1) // test
-				{
-					this.lines[j][item.x] = item.width;
-				}
+				index = -1;
+
+				return false;
 			}
+			if(this.x <= block.x)
+			{
+				index = j + 1; // maybe order by y
+			}
+			return true;
+		});
+		if(index != -1)
+		{
+			this.splice(index, 0, block);
 		}
-		return [x, y];
 	};
 
 	/* plugin */
