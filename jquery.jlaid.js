@@ -18,12 +18,6 @@
 		this.wrapper = wrapper;
 		this.options = options;
 
-		var that = this;
-
-		$(window).resize(function()
-		{
-			that.resize();
-		});
 		this.init();
 	};
 
@@ -31,7 +25,8 @@
 
 	Laid.defaults =
 	{
-		stretch: true,
+		optimize: true,
+		stretch: false,
 		responsive: false
 	};
 	Laid.INFINITE = 999999;
@@ -49,6 +44,12 @@
 		});
 		this.children.css('position', 'absolute');
 
+		var that = this;
+
+		$(window).resize(function()
+		{
+			that.resize();
+		});
 		this.resize();
 	};
 	Laid.prototype.each = function(callback)
@@ -66,66 +67,46 @@
 	{
 		this.lines = [ new Line() ];
 		this.stack = [];
-
 		this.width = $(this.wrapper).width();
 
-		var children = $.makeArray(this.children);
+		var items = $.makeArray(this.children), item, that = this;
+		var block = {}, next;
 
-		var next, x, y, that = this;
-
-		while(children.length)
+		while(items.length)
 		{
-			x = y = this.INFINITE;
+			block.x = block.y = this.INFINITE;
 
-			for(var i in children)
+			for(var i = 0; i < items.length; i++)
 			{
-				var block = that.next($.data(children[i], 'width'), $(children[i]).outerHeight(), true);
+				next = that.next
+				(
+					$.data(items[i], 'width'), $(items[i]).outerHeight()
+				);
+				if(next.y >= block.y)
+				{
+					continue;
+				}
+				if(next.x >= block.x && next.y == block.y)
+				{
+					continue;
+				}
+				block = that.copy(next);
+				item = items[i];
 
-				if(block.y >= y)
+				if(!that.options.optimize)
 				{
-					continue;
+					break;
 				}
-				if(block.x >= x && block.y == y)
-				{
-					continue;
-				}
-				next = children[i];
-				x = block.x;
-				y = block.y;
 			};
+			this.append(block);
 
-			this.append(x, y, $.data(next, 'width'), $(next).outerHeight());
+			$(item).css('left', block.x);
+			$(item).css('top', block.y);
 
-			children.splice(children.indexOf(next), 1); // IE
-
-			$(next).css('left', x);
-			$(next).css('top', y);
+			items.splice(items.indexOf(item), 1); // IE
 		}
-
-		//this.children.each(function()
-		//{
-		//	var width = $.data(this, 'width');
-		//	var inner = $.data(this, 'inner');
-		//
-		//	var block = that.next(width, $(this).outerHeight());
-		//
-		//	$(this).css('left', block.x);
-		//	$(this).css('top', block.y);
-		//});
-		//console.log(this.lines);
-		//
-		//console.log('lines ' + this.lines.length);
-		//this.each(function(i)
-		//{
-		//	console.log(i + ' ' + this.y);
-		//
-		//	this.each(function(j)
-		//	{
-		//		console.log('	' + j + ' ' + this.x + ' ' + this.y + ' ' + this.width + ' ' + this.height);
-		//	});
-		//});
 	};
-	Laid.prototype.next = function(width, height, test)
+	Laid.prototype.next = function(width, height)
 	{
 		var next = { x: Laid.INFINITE, y: Laid.INFINITE }, that = this;
 
@@ -153,11 +134,7 @@
 				}
 			});
 		});
-		if(test)
-		{
-			return { x: next.x, y: next.y, width: width, height: height }; // you have this in two places
-		}
-		return this.append(next.x, next.y, width, height);
+		return { x: next.x, y: next.y, width: width, height: height };
 	}
 	Laid.prototype.check = function(x, y, width, height)
 	{
@@ -193,19 +170,17 @@
 			});
 		});
 	};
-	Laid.prototype.append = function(x, y, width, height)
+	Laid.prototype.append = function(block)
 	{
-		var block, index = 0, that = this;
+		var index = 0, that = this;
 
-		this.stack.push(block =
-		{
-			x: x, y: y, width: width, height: height
-		});
+		this.stack.push(this.copy(block));
+
 		this.each(function(i, line)
 		{
-			if(this.y >= y + height)
+			if(this.y >= block.y + block.height)
 			{
-				if(this.y == y + height)
+				if(this.y == block.y + block.height)
 				{
 					index = -1;
 				}
@@ -215,7 +190,7 @@
 		});
 		if(index != -1)
 		{
-			this.lines.splice(index, 0, new Line(y + height));
+			this.lines.splice(index, 0, new Line(block.y + block.height));
 		}
 		for(var k = 0; k < this.stack.length; k++)
 		{
@@ -227,7 +202,16 @@
 				}
 			});
 		}
-		return block;
+	};
+	Laid.prototype.copy = function(block)
+	{
+		return(
+		{
+			x: block.x,
+			y: block.y,
+			width: block.width,
+			height: block.height
+		});
 	};
 
 	/* Line constructor */
