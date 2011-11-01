@@ -48,12 +48,12 @@ $(function()
 	$('.grid li p').each(function()
 	{
 		var s = arr[Math.round(Math.random())];
-console.log(s);
+//console.log(s);
 		$(this).width(s[0] - 20);
 		$(this).height(s[1] - 16);
 	});
 	var t = (new Date().getTime());
-	$('.grid').laid();
+	$('.grid').laid({optimize:true});
 	console.log((new Date().getTime()) - t);
 });
 	</script>

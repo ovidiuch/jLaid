@@ -74,7 +74,7 @@
 
 		while(items.length)
 		{
-			block.x = block.y = this.INFINITE;
+			block.x = block.y = block.f = this.INFINITE;
 
 			for(var i = 0; i < items.length; i++)
 			{
@@ -82,13 +82,16 @@
 				(
 					$.data(items[i], 'width'), $(items[i]).outerHeight()
 				);
-				if(next.y >= block.y)
+				if(next.f <= block.f)
 				{
-					continue;
-				}
-				if(next.x >= block.x && next.y == block.y)
-				{
-					continue;
+					if(next.y >= block.y)
+					{
+						continue;
+					}
+					if(next.x >= block.x && next.y == block.y)
+					{
+						continue;
+					}
 				}
 				block = that.copy(next);
 				item = items[i];
@@ -105,10 +108,11 @@
 
 			items.splice(items.indexOf(item), 1); // IE
 		}
+		// don't like factor, need to calculate empty spaces and try backtracking
 	};
 	Laid.prototype.next = function(width, height)
 	{
-		var next = { x: Laid.INFINITE, y: Laid.INFINITE }, that = this;
+		var next = { x: Laid.INFINITE, y: Laid.INFINITE, f: 0 }, that = this;
 
 		this.each(function(i, line)
 		{
@@ -131,11 +135,23 @@
 				{
 					next.x = this.x + this.width;
 					next.y = line.y;
+
+					if(next.y + height > block.y + block.height)
+					{
+						if(next.y > block.y)
+						{
+							next.f++;
+						}
+						next.f++;
+					}
 				}
 			});
 		});
-		return { x: next.x, y: next.y, width: width, height: height };
-	}
+		next.width = width;
+		next.height = height;
+
+		return next;
+	};
 	Laid.prototype.check = function(x, y, width, height)
 	{
 		if(x && x + width > this.width)
@@ -210,7 +226,8 @@
 			x: block.x,
 			y: block.y,
 			width: block.width,
-			height: block.height
+			height: block.height,
+			f: block.f
 		});
 	};
 
