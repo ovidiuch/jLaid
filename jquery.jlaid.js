@@ -96,7 +96,7 @@
 				block = that.copy(next);
 				item = items[i];
 
-				if(!that.options.optimize)
+				if(!that.options.optimize || 1)
 				{
 					break;
 				}
@@ -108,6 +108,43 @@
 
 			items.splice(items.indexOf(item), 1); // IE
 		}
+
+
+		// white space
+
+		var total = 0, x = 0, y = 0, width = 0;
+
+		this.each(function(i, line)
+		{
+			if(i >= that.lines.length - 1) // check differently to see if there's block below
+			{
+				return;
+			}
+			//total += width * (this.y - y);
+			total += width * 1;
+
+			x = 0, y = this.y, width = 0;
+
+			this.each(function(j, block)
+			{
+				if(this.y > y)
+				{
+					return;
+				}
+				width += this.x - x;
+
+				if(this.x - x)
+				{
+					console.log('found: ' + this.x + ' ' + this.y + ' ' + this.width + ' ' + this.height);
+					console.log(this.x - x);
+				}
+
+				x = this.x + this.width;
+			});
+			// add width - last
+		});
+		console.log('total: ' + total);
+
 		// don't like factor, need to calculate empty spaces and try backtracking
 	};
 	Laid.prototype.next = function(width, height)
