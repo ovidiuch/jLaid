@@ -74,7 +74,7 @@
 
 		while(items.length)
 		{
-			block.x = block.y = block.f = this.INFINITE;
+			block.x = block.y = this.INFINITE;
 
 			for(var i = 0; i < items.length; i++)
 			{
@@ -82,16 +82,13 @@
 				(
 					$.data(items[i], 'width'), $(items[i]).outerHeight()
 				);
-				if(next.f <= block.f)
+				if(next.y >= block.y)
 				{
-					if(next.y >= block.y)
-					{
-						continue;
-					}
-					if(next.x >= block.x && next.y == block.y)
-					{
-						continue;
-					}
+					continue;
+				}
+				if(next.x >= block.x && next.y == block.y)
+				{
+					continue;
 				}
 				block = that.copy(next);
 				item = items[i];
@@ -108,44 +105,7 @@
 
 			items.splice(items.indexOf(item), 1); // IE
 		}
-
-
-		// white space
-
-		var total = 0, x = 0, y = 0, width = 0;
-
-		this.each(function(i, line)
-		{
-			if(i >= that.lines.length - 1) // check differently to see if there's block below
-			{
-				return;
-			}
-			//total += width * (this.y - y);
-			total += width * 1;
-
-			x = 0, y = this.y, width = 0;
-
-			this.each(function(j, block)
-			{
-				if(this.y > y)
-				{
-					return;
-				}
-				width += this.x - x;
-
-				if(this.x - x)
-				{
-					console.log('found: ' + this.x + ' ' + this.y + ' ' + this.width + ' ' + this.height);
-					console.log(this.x - x);
-				}
-
-				x = this.x + this.width;
-			});
-			// add width - last
-		});
-		console.log('total: ' + total);
-
-		// don't like factor, need to calculate empty spaces and try backtracking
+		console.log('space: ' + this.space());
 	};
 	Laid.prototype.next = function(width, height)
 	{
@@ -172,15 +132,6 @@
 				{
 					next.x = this.x + this.width;
 					next.y = line.y;
-
-					if(next.y + height > block.y + block.height)
-					{
-						if(next.y > block.y)
-						{
-							next.f++;
-						}
-						next.f++;
-					}
 				}
 			});
 		});
@@ -256,6 +207,36 @@
 			});
 		}
 	};
+	Laid.prototype.space = function()
+	{
+		var space = 0, width = 0, x, y;
+
+		this.each(function(i, line)
+		{
+			space += width/* * (this.y - y)*/;
+
+			x = 0, y = this.y, width = 0;
+
+			this.each(function(j, block)
+			{
+				if(this.y > y)
+				{
+					return;
+				}
+				// need to idenfity last blocks (vertically);
+
+				width += this.x - x;
+
+				if(this.x - x)
+				{
+					console.log('block: ' + this.x + ' ' + this.y + ' ' + this.width + ' ' + this.height);
+					console.log('width: ' + (this.x - x));
+				}
+				x = this.x + this.width;
+			});
+		});
+		return space;
+	};
 	Laid.prototype.copy = function(block)
 	{
 		return(
@@ -263,8 +244,7 @@
 			x: block.x,
 			y: block.y,
 			width: block.width,
-			height: block.height,
-			f: block.f
+			height: block.height
 		});
 	};
 
