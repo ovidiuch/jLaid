@@ -27,7 +27,8 @@
 	{
 		optimize: true,
 		stretch: false,
-		responsive: false
+		responsive: false,
+		debug: false
 	};
 	Laid.INFINITE = 999999;
 
@@ -209,13 +210,15 @@
 	};
 	Laid.prototype.space = function()
 	{
-		var space = 0, width = 0, x, y;
+		var spaces = [], x, y, that = this;
 
 		this.each(function(i, line)
 		{
-			space += width/* * (this.y - y)*/;
-
-			x = 0, y = this.y, width = 0;
+			if(!that.lines[i + 1])
+			{
+				return;
+			}
+			x = 0, y = this.y;
 
 			this.each(function(j, block)
 			{
@@ -223,19 +226,70 @@
 				{
 					return;
 				}
-				// need to idenfity last blocks (vertically);
-
-				width += this.x - x;
-
+				for(var k in spaces)
+				{
+					if(spaces[k].inner || spaces[k].y > this.y)
+					{
+						continue;
+					}
+					if(spaces[k].x >= this.x + this.width)
+					{
+						continue;
+					}
+					if(spaces[k].x + spaces[k].width <= this.x)
+					{
+						continue;
+					}
+					spaces[k].inner = true;
+				}
 				if(this.x - x)
 				{
-					console.log('block: ' + this.x + ' ' + this.y + ' ' + this.width + ' ' + this.height);
-					console.log('width: ' + (this.x - x));
+					spaces.push(
+					{
+						inner: false,
+						x: x,
+						y: line.y,
+						width: this.x - x,
+						height: that.lines[i + 1].y - line.y
+					});
 				}
 				x = this.x + this.width;
 			});
 		});
-		return space;
+		var total = 0;
+
+		for(var i in spaces)
+		{
+			if(!spaces[i].inner)
+			{
+				continue;
+			}
+			total += spaces[i].width * spaces[i].height
+
+			if(this.options.debug)
+			{
+				this.draw(spaces[i]);
+			}
+		}
+		return total;
+	};
+	Laid.prototype.draw = function(space)
+	{
+		var dot, r, g, b;
+
+		r = Math.round(Math.random() * 255);
+		g = Math.round(Math.random() * 255);
+		b = Math.round(Math.random() * 255);
+
+		$(document.body).append($('<div></div').css(
+		{
+			position: 'absolute',
+			left: space.x,
+			top: space.y,
+			width: space.width,
+			height: space.height,
+			background: 'rgb(' + r + ', ' + g + ', ' + b + ')'
+		}));
 	};
 	Laid.prototype.copy = function(block)
 	{
