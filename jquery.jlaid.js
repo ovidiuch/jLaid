@@ -25,7 +25,6 @@
 
 	Laid.defaults =
 	{
-		optimize: true,
 		delay: 200,
 		stretch: false,
 		responsive: false,
@@ -81,7 +80,7 @@
 	};
 	Laid.prototype.resize = function()
 	{
-		this.log('jLaid: generating...');
+		this.log('generating...');
 
 		this.generate(this.time());
 	};
@@ -90,52 +89,42 @@
 		this.lines = [ new Line() ];
 		this.stack = [];
 		this.width = $(this.wrapper).width();
-		this.moves = 0;
 
-		var items = $.makeArray(this.children), item, that = this;
-		var block = {}, next;
+		var next, that = this;
 
-		while(items.length)
+		for(var i = 0, c; i < this.children.length; i++)
 		{
-			block.space = this.INFINITE;
+			c = this.children[i];
 
-			for(var i = 0; i < items.length; i++)
-			{
-				next = that.next
-				(
-					$.data(items[i], 'width'), $(items[i]).outerHeight()
-				);
-				this.append(next);
-
-				next.space = this.space();
-
-				this.revert();
-
-				if(next.space >= block.space)
-				{
-					continue;
-				}
-				block = that.copy(next);
-
-				item = items[i];
-
-				if(!that.options.optimize || !block.space)
-				{
-					break;
-				}
-			};
-			this.append(block);
-
-			$(item).css('left', block.x);
-			$(item).css('top', block.y);
-
-			items.splice(items.indexOf(item), 1);
+			this.append(next = that.next
+			(
+				$.data(c, 'width'), $(c).outerHeight()
+			));
+			$(c).css({ left: next.x, top: next.y });
+		};
+		if(!this.options.debug)
+		{
+			return;
 		}
-		that.log
-		(
-			'jLaid: generated in ' +
-			(that.time() - time) + ' ms and ' + this.moves + ' moves'
-		);
+		var t = this.time() - time;
+
+		this.each(function(i, line)
+		{
+			that.log('line #' + (i + 1) + ' [' + line.y + ']');
+
+			this.each(function(j, block)
+			{
+				that.log
+				(
+					'> #' + (j + 1) + ' [' +
+					this.x + ' ' +
+					this.y + ' ' +
+					this.width + ' ' +
+					this.height + ']'
+				);
+			});
+		});
+		that.log('generated in ' + t + 'ms');
 	};
 	Laid.prototype.next = function(width, height)
 	{
@@ -154,7 +143,7 @@
 			}
 			this.each(function(j, block)
 			{
-				if(this.x > next.x && this.y == next.y)
+				if(this.x > next.x && line.y == next.y)
 				{
 					return;
 				}
@@ -178,7 +167,7 @@
 		}
 		return this.each(function(i, line)
 		{
-			if(this.y > y + height)
+			if(this.y >= y + height)
 			{
 				return true;
 			}
@@ -226,116 +215,18 @@
 		{
 			this.lines.splice(index, 0, new Line(block.y + block.height));
 		}
-		for(var k = 0; k < this.stack.length; k++)
+		for(var k = 0, s; k < this.stack.length; k++)
 		{
+			s = this.stack[k];
+
 			this.each(function(i, line)
 			{
-				if(this.y < that.stack[k].y + that.stack[k].height)
+				if(this.y >= s.y && this.y < s.y + s.height)
 				{
-					this.insert(that.stack[k]);
+					this.insert(s);
 				}
 			});
 		}
-		this.moves++;
-	};
-	Laid.prototype.revert = function()
-	{
-		var block = this.stack.pop();
-
-		this.each(function(i, line)
-		{
-			if(this.indexOf(block) != -1)
-			{
-				this.splice(this.indexOf(block), 1);
-			}
-		});
-	};
-	Laid.prototype.space = function() // maybe add space to right limit
-	{
-		var spaces = [], x, y, that = this;
-
-		this.each(function(i, line)
-		{
-			if(!that.lines[i + 1])
-			{
-				return;
-			}
-			x = 0, y = this.y;
-
-			this.each(function(j, block)
-			{
-				if(this.y > y)
-				{
-					return;
-				}
-				for(var k in spaces)
-				{
-					if(spaces[k].inner || spaces[k].y > this.y)
-					{
-						continue;
-					}
-					if(spaces[k].x >= this.x + this.width)
-					{
-						continue;
-					}
-					if(spaces[k].x + spaces[k].width <= this.x)
-					{
-						continue;
-					}
-					spaces[k].inner = true;
-				}
-				if(this.x - x)
-				{
-					spaces.push(
-					{
-						inner: false,
-						x: x,
-						y: line.y,
-						width: this.x - x,
-						height: that.lines[i + 1].y - line.y
-					});
-				}
-				x = this.x + this.width;
-			});
-		});
-		var total = 0;
-
-		if(this.options.debug)
-		{
-			$('.jlaid-trace').remove();
-		}
-		for(var i in spaces)
-		{
-			if(!spaces[i].inner)
-			{
-				//continue;
-			}
-			total += spaces[i].width * spaces[i].height
-
-			if(this.options.debug)
-			{
-				this.draw(spaces[i]);
-			}
-		}
-		return total;
-	};
-	Laid.prototype.draw = function(space)
-	{
-		var dot, r, g, b;
-
-		r = Math.round(Math.random() * 255);
-		g = Math.round(Math.random() * 255);
-		b = Math.round(Math.random() * 255);
-
-		$(document.body).append($('<div class="jlaid-trace"></div').css(
-		{
-			position: 'absolute',
-			left: space.x,
-			top: space.y,
-			width: space.width,
-			height: space.height,
-			background: 'rgb(' + r + ', ' + g + ', ' + b + ')'
-		}));
 	};
 	Laid.prototype.copy = function(block)
 	{
@@ -354,7 +245,7 @@
 	{
 		if(this.options.debug)
 		{
-			console.log(message);
+			console.log('jLaid: ' + message);
 		}
 	};
 	Laid.prototype.time = function()
@@ -398,7 +289,7 @@
 			}
 			if(this.x <= block.x)
 			{
-				index = j + 1; // maybe order by y
+				index = j + 1;
 			}
 			return true;
 		});

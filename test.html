@@ -44,21 +44,23 @@ $(function()
 		[380, 180],
 		[180, 380]
 	];
-
+	var i = 0;
 	$('.grid li p').each(function()
 	{
+		$(this).html('<strong>' + (++i) + '</strong>. ' + $(this).html());
+
 		var s = arr[Math.round(Math.random())];
 		var s2 = arr[Math.round(Math.random())];
 		var d = arr[0][Math.round(Math.random())];
 		var a = arr[0][Math.round(Math.random())];
 //console.log(s);
-		$(this).width(Math.round(Math.random() * 200) + 200);
-		//$(this).width(s[0] - 20);
-		$(this).height(Math.round(Math.random() * 200) + 200);
-		//$(this).height(s2[0] - 16);
+		//$(this).width(Math.round(Math.random() * 200) + 200);
+		$(this).width(s[0] - 20);
+		//$(this).height(Math.round(Math.random() * 200) + 200);
+		$(this).height(s2[0] - 16);
 	});
 	//var t = (new Date().getTime());
-	$('.grid').laid({optimize:true,debug:true});
+	$('.grid').laid({optimize:false,debug:true});
 	//console.log((new Date().getTime()) - t);
 });
 	</script>
