@@ -49,7 +49,7 @@
 
 		$(window).resize(function()
 		{
-			that.resize();
+			that.resize(); // add delay
 		});
 		this.resize();
 	};
@@ -66,16 +66,29 @@
 	};
 	Laid.prototype.resize = function()
 	{
+		this.log('jLaid: generating...');
+
+		var that = this;
+
+		window.setTimeout(function()
+		{
+			that.generate(that.time());
+		},
+		0);
+	};
+	Laid.prototype.generate = function(time)
+	{
 		this.lines = [ new Line() ];
 		this.stack = [];
 		this.width = $(this.wrapper).width();
+		this.moves = 0;
 
 		var items = $.makeArray(this.children), item, that = this;
 		var block = {}, next;
 
 		while(items.length)
 		{
-			block.x = block.y = this.INFINITE;
+			block.space = this.INFINITE;
 
 			for(var i = 0; i < items.length; i++)
 			{
@@ -83,18 +96,21 @@
 				(
 					$.data(items[i], 'width'), $(items[i]).outerHeight()
 				);
-				if(next.y >= block.y)
-				{
-					continue;
-				}
-				if(next.x >= block.x && next.y == block.y)
+				this.append(next);
+
+				next.space = this.space();
+
+				this.revert();
+
+				if(next.space >= block.space)
 				{
 					continue;
 				}
 				block = that.copy(next);
+
 				item = items[i];
 
-				if(!that.options.optimize || 1)
+				if(!that.options.optimize || !block.space)
 				{
 					break;
 				}
@@ -106,7 +122,11 @@
 
 			items.splice(items.indexOf(item), 1); // IE
 		}
-		console.log('space: ' + this.space());
+		that.log
+		(
+			'jLaid: generated in ' +
+			(that.time() - time) + ' ms and ' + this.moves + ' moves'
+		);
 	};
 	Laid.prototype.next = function(width, height)
 	{
@@ -207,8 +227,21 @@
 				}
 			});
 		}
+		this.moves++;
 	};
-	Laid.prototype.space = function()
+	Laid.prototype.revert = function()
+	{
+		var block = this.stack.pop();
+
+		this.each(function(i, line)
+		{
+			if(this.indexOf(block) != -1) // IE
+			{
+				this.splice(this.indexOf(block), 1); // IE
+			}
+		});
+	};
+	Laid.prototype.space = function() // maybe add space to right limit
 	{
 		var spaces = [], x, y, that = this;
 
@@ -258,11 +291,15 @@
 		});
 		var total = 0;
 
+		if(this.options.debug)
+		{
+			$('.jlaid-trace').remove();
+		}
 		for(var i in spaces)
 		{
 			if(!spaces[i].inner)
 			{
-				continue;
+				//continue;
 			}
 			total += spaces[i].width * spaces[i].height
 
@@ -281,7 +318,7 @@
 		g = Math.round(Math.random() * 255);
 		b = Math.round(Math.random() * 255);
 
-		$(document.body).append($('<div></div').css(
+		$(document.body).append($('<div class="jlaid-trace"></div').css(
 		{
 			position: 'absolute',
 			left: space.x,
@@ -293,13 +330,27 @@
 	};
 	Laid.prototype.copy = function(block)
 	{
-		return(
+		var copy = {};
+
+		for(var i in block)
 		{
-			x: block.x,
-			y: block.y,
-			width: block.width,
-			height: block.height
-		});
+			if(block.hasOwnProperty(i))
+			{
+				copy[i] = block[i];
+			}
+		}
+		return copy;
+	};
+	Laid.prototype.log = function(message)
+	{
+		if(this.options.debug)
+		{
+			console.log(message);
+		}
+	};
+	Laid.prototype.time = function()
+	{
+		return new Date().getTime();
 	};
 
 	/* Line constructor */
