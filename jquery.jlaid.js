@@ -26,6 +26,7 @@
 	Laid.defaults =
 	{
 		optimize: true,
+		delay: 200,
 		stretch: false,
 		responsive: false,
 		debug: false
@@ -49,7 +50,7 @@
 
 		$(window).resize(function()
 		{
-			that.resize(); // add delay
+			that.presize();
 		});
 		this.resize();
 	};
@@ -64,17 +65,25 @@
 		}
 		return true;
 	};
+	Laid.prototype.presize = function()
+	{
+		if(this.timeout)
+		{
+			window.clearTimeout(this.timeout);
+		}
+		var that = this;
+
+		this.timeout = window.setTimeout(function()
+		{
+			that.resize(that.timeout = null);
+		},
+		this.options.delay);
+	};
 	Laid.prototype.resize = function()
 	{
 		this.log('jLaid: generating...');
 
-		var that = this;
-
-		window.setTimeout(function()
-		{
-			that.generate(that.time());
-		},
-		0);
+		this.generate(this.time());
 	};
 	Laid.prototype.generate = function(time)
 	{
