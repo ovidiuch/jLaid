@@ -120,7 +120,7 @@
 			$(item).css('left', block.x);
 			$(item).css('top', block.y);
 
-			items.splice(items.indexOf(item), 1); // IE
+			items.splice(items.indexOf(item), 1);
 		}
 		that.log
 		(
@@ -235,9 +235,9 @@
 
 		this.each(function(i, line)
 		{
-			if(this.indexOf(block) != -1) // IE
+			if(this.indexOf(block) != -1)
 			{
-				this.splice(this.indexOf(block), 1); // IE
+				this.splice(this.indexOf(block), 1);
 			}
 		});
 	};
@@ -410,3 +410,20 @@
 	};
 })
 (jQuery, window, document);
+
+/* Array.indexOf */
+
+if(!Array.prototype.indexOf)
+{
+	Array.prototype.indexOf = function(obj, start)
+	{
+		for(var i = (start || 0), n = this.length; i < n; i++)
+		{
+			if(this[i] === obj)
+			{
+				return i;
+			}
+		}
+		return -1;
+	};
+}
