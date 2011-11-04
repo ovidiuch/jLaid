@@ -420,7 +420,7 @@
 })
 (jQuery, window, document);
 
-/* Array.indexOf */
+/* Array.prototype.indexOf */
 
 if(!Array.prototype.indexOf)
 {
