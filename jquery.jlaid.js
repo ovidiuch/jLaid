@@ -8,6 +8,14 @@
 		{
 			return;
 		}
+		var that = this;
+
+		$(this.children).each(function()
+		{
+			$.data(this, 'laid', that);
+		});
+		$.data(wrapper, 'laid', this);
+
 		for(var i in Laid.defaults)
 		{
 			if(options[i] === undefined)
@@ -18,7 +26,10 @@
 		this.wrapper = wrapper;
 		this.options = options;
 
-		this.init();
+		if(!this.option('wait'))
+		{
+			this.init();
+		}
 	};
 
 	/* Laid static */
@@ -29,7 +40,8 @@
 		debug: false,
 		delay: 200,
 		stretch: false,
-		responsive: false
+		responsive: false,
+		wait: false
 	};
 	Laid.INFINITE = 999999;
 
@@ -72,6 +84,32 @@
 		});
 		this.resize(true);
 	};
+	Laid.prototype.option = function(name, child)
+	{
+		if(child)
+		{
+			var options = $.data(child, 'options') || {};
+
+			if(options[name] !== undefined)
+			{
+				return options[name]
+			};
+		}
+		return this.options[name];
+	};
+	Laid.prototype.update = function(child, options)
+	{
+		if(typeof($.data(child, 'options')) != 'object')
+		{
+			$.data(child, 'options', {});
+		}
+		var o = $.data(child, 'options');
+
+		for(var i in options)
+		{
+			o[i] = options[i];
+		}
+	};
 	Laid.prototype.each = function(callback)
 	{
 		for(var i = 0; i < this.lines.length; i++)
@@ -95,7 +133,7 @@
 		{
 			that.resize(that.timeout = null);
 		},
-		this.options.delay);
+		this.option('delay'));
 	};
 	Laid.prototype.resize = function(init)
 	{
@@ -121,7 +159,7 @@
 			));
 			this.set(c, next.x, next.y, init);
 		};
-		if(!this.options.debug)
+		if(!this.option('debug'))
 		{
 			return;
 		}
@@ -249,7 +287,7 @@
 	};
 	Laid.prototype.set = function(child, x, y, init)
 	{
-		var animate = this.options.animate;
+		var animate = this.option('animate', child);
 
 		if(typeof(animate) == 'function')
 		{
@@ -263,7 +301,7 @@
 	};
 	Laid.prototype.log = function(message)
 	{
-		if(this.options.debug)
+		if(this.option('debug'))
 		{
 			console.log('jLaid: ' + message);
 		}
@@ -319,10 +357,36 @@
 
 	$.fn.laid = function(options)
 	{
-		return this.each(function()
+		var plugin, init = function()
 		{
-			new Laid(this, options || {});
-		});
+			$(this).each(function()
+			{
+				$.data(this, 'laid').init();
+			});
+		};
+		return (plugin = function(selection, options)
+		{
+			if(typeof(selection) == 'string')
+			{
+				selection = this.find(selection);
+			}
+			else if(!selection)
+			{
+				this.laid = plugin, this.init = init;
+			}
+			options = options || {};
+
+			(selection || this).each(function()
+			{
+				if(!$.data(this, 'laid'))
+				{
+					return new Laid(this, options);
+				}
+				return $.data(this, 'laid').update(this, options);
+			});
+			return this;
+		})
+		.call(this, null, options);
 	};
 })
 (jQuery, window, document);
