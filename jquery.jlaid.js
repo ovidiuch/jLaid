@@ -25,12 +25,31 @@
 
 	Laid.defaults =
 	{
+		animate: true,
+		debug: false,
 		delay: 200,
 		stretch: false,
-		responsive: false,
-		debug: false
+		responsive: false
 	};
 	Laid.INFINITE = 999999;
+
+	Laid.copy = function(block)
+	{
+		var copy = {};
+
+		for(var i in block)
+		{
+			if(block.hasOwnProperty(i))
+			{
+				copy[i] = block[i];
+			}
+		}
+		return copy;
+	};
+	Laid.time = function()
+	{
+		return new Date().getTime();
+	};
 
 	/* Laid prototype */
 
@@ -51,7 +70,7 @@
 		{
 			that.presize();
 		});
-		this.resize();
+		this.resize(true);
 	};
 	Laid.prototype.each = function(callback)
 	{
@@ -78,13 +97,13 @@
 		},
 		this.options.delay);
 	};
-	Laid.prototype.resize = function()
+	Laid.prototype.resize = function(init)
 	{
 		this.log('generating...');
 
-		this.generate(this.time());
+		this.generate(Laid.time(), Boolean(init));
 	};
-	Laid.prototype.generate = function(time)
+	Laid.prototype.generate = function(time, init)
 	{
 		this.lines = [ new Line() ];
 		this.stack = [];
@@ -100,13 +119,13 @@
 			(
 				$.data(c, 'width'), $(c).outerHeight()
 			));
-			$(c).css({ left: next.x, top: next.y });
+			this.set(c, next.x, next.y, init);
 		};
 		if(!this.options.debug)
 		{
 			return;
 		}
-		var t = this.time() - time;
+		var t = Laid.time() - time;
 
 		this.each(function(i, line)
 		{
@@ -197,7 +216,7 @@
 	{
 		var index = 0, that = this;
 
-		this.stack.push(this.copy(block));
+		this.stack.push(Laid.copy(block));
 
 		this.each(function(i, line)
 		{
@@ -228,18 +247,19 @@
 			});
 		}
 	};
-	Laid.prototype.copy = function(block)
+	Laid.prototype.set = function(child, x, y, init)
 	{
-		var copy = {};
+		var animate = this.options.animate;
 
-		for(var i in block)
+		if(typeof(animate) == 'function')
 		{
-			if(block.hasOwnProperty(i))
-			{
-				copy[i] = block[i];
-			}
+			return animate.call(child, x, y, init);
 		}
-		return copy;
+		if(animate && !init)
+		{
+			return $(child).stop().animate({ left: x, top: y });
+		}
+		return $(child).css({ left: x, top: y });
 	};
 	Laid.prototype.log = function(message)
 	{
@@ -247,10 +267,6 @@
 		{
 			console.log('jLaid: ' + message);
 		}
-	};
-	Laid.prototype.time = function()
-	{
-		return new Date().getTime();
 	};
 
 	/* Line constructor */
