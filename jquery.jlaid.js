@@ -82,7 +82,7 @@
 		{
 			that.presize();
 		});
-		this.resize(true);
+		this.refresh(true);
 	};
 	Laid.prototype.option = function(name, child)
 	{
@@ -131,18 +131,16 @@
 
 		this.timeout = window.setTimeout(function()
 		{
-			that.resize(that.timeout = null);
+			that.refresh(that.timeout = null);
 		},
 		this.option('delay'));
 	};
-	Laid.prototype.resize = function(init)
+	Laid.prototype.refresh = function(init)
 	{
-		this.log('generating...');
+		this.log('building...');
 
-		this.generate(Laid.time(), Boolean(init));
-	};
-	Laid.prototype.generate = function(time, init)
-	{
+		var t = Laid.time();
+
 		this.lines = [ new Line() ];
 		this.stack = [];
 		this.width = $(this.wrapper).width();
@@ -163,7 +161,7 @@
 		{
 			return;
 		}
-		var t = Laid.time() - time;
+		t = Laid.time() - t;
 
 		this.each(function(i, line)
 		{
@@ -181,7 +179,7 @@
 				);
 			});
 		});
-		that.log('generated in ' + t + 'ms');
+		that.log('built in ' + t + 'ms');
 	};
 	Laid.prototype.next = function(width, height)
 	{
