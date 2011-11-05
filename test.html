@@ -33,7 +33,7 @@ html, body {
 }
 	</style>
 
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.js"></script>
 	<script src="jquery.jlaid.js"></script>
 
 	<script>
@@ -77,7 +77,7 @@ $(function()
 	//	$(this).width(s[0] - 20);
 	//	$(this).height(s2[0] - 16);
 	//});
-	$('.grid').laid(
+	window.laid = $('.grid').laid(
 	{
 		animate: false,
 		debug: true,
@@ -91,7 +91,7 @@ $(function()
 	{
 		animate: true
 	})
-	.init();
+	.laid('init');
 });
 	</script>
 </head>

@@ -355,32 +355,39 @@
 
 	$.fn.laid = function(options)
 	{
-		var plugin, init = function()
+		var plugin, methods =
+		[
+			'init', 'refresh'
+		];
+		return (plugin = function(query, args)
 		{
-			$(this).each(function()
+			if(typeof(query) == 'string')
 			{
-				$.data(this, 'laid').init();
-			});
-		};
-		return (plugin = function(selection, options)
-		{
-			if(typeof(selection) == 'string')
-			{
-				selection = this.find(selection);
-			}
-			else if(!selection)
-			{
-				this.laid = plugin, this.init = init;
-			}
-			options = options || {};
+				if(methods.indexOf(query) != -1)
+				{
+					$(this).each(function()
+					{
+						var laid = $.data(this, 'laid');
 
-			(selection || this).each(function()
+						laid[query].apply(laid, args);
+					});
+					return this;
+				}
+				query = this.find(query);
+			}
+			else if(query == null)
+			{
+				this.laid = plugin;
+			}
+			args = args || {};
+
+			(query || this).each(function()
 			{
 				if(!$.data(this, 'laid'))
 				{
-					return new Laid(this, options);
+					return new Laid(this, args);
 				}
-				return $.data(this, 'laid').update(this, options);
+				return $.data(this, 'laid').update(this, args);
 			});
 			return this;
 		})
