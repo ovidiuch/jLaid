@@ -54,7 +54,7 @@ transitions.easeInExpo = function(current, total)
 };
 transitions.easeInBack = function(current, total, overshoot)
 {
-	return (current /= total) * current * ((overshoot + 1) * current - overshoot);
+	return (current /= total) * current * ((2 + 1) * current - 2);
 };
 
 $(function()
@@ -83,7 +83,7 @@ $(function()
 		[2, 1],
 		[1, 1]
 	];
-	for(var i in boxes)
+	for(var i = 0; i < boxes.length; i++)
 	{
 		var w = sizes[boxes[i][0]]/* - 20*/;
 		var h = sizes[boxes[i][1]]/* - 16*/;
@@ -92,20 +92,21 @@ $(function()
 	}
 	window.laid = $('.grid').laid(
 	{
-		//animate: transitions.linear,
-		animate: false,
+		//animate: transitions.easeInExpo,
+		//time: 0.6
+		//animate: false,
 		//debug: true,
-		wait: true
+		//wait: true
 	})
-	.laid('#grid-2',
-	{
-		animate: true
-	})
-	.laid('.child-19',
-	{
-		animate: false
-	})
-	.laid('init');
+	//.laid('#grid-2',
+	//{
+	//	animate: true
+	//})
+	//.laid('.child-19',
+	//{
+	//	animate: false
+	//})
+	//.laid('init');
 });
 	</script>
 </head>
@@ -128,7 +129,7 @@ $(function()
 		<!--<li><p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p></li>-->
 		<!--<li><p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p></li>-->
 	</ul>
-	<ul id="grid-2" class="grid"></ul>
+	<!--<ul id="grid-2" class="grid"></ul>-->
 	<!--<ul class="grid">
 		<li><p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p></li>
 		<li><p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p></li>

@@ -36,12 +36,12 @@
 
 	Laid.defaults =
 	{
-		animate: true,
 		debug: false,
 		delay: 200,
-		time: 0.35,
+		duration: 0.4,
 		stretch: false,
 		responsive: false,
+		transition: true,
 		wait: false
 	};
 	Laid.INFINITE = 999999;
@@ -292,27 +292,31 @@
 	};
 	Laid.prototype.set = function(child, x, y, init)
 	{
-		var animate = this.option('animate', child);
+		var current = $(child).position();
 
-		if(!animate || init)
+		if(current.left == x && current.top == y)
 		{
-			$(child).css({ left: x, top: y }); return;
+			return;
 		}
-		//return $(child).stop().animate({ left: x, top: y }); // find out why faster?
+		var transition = this.option('transition', child);
 
-		var time = this.option('time', child);
+		if(!transition || init)
+		{
+			$(child).css({ left: x, top: y });
 
-		var base = $(child).position();
+			return;
+		}
+		var duration = this.option('duration', child);
 
-		x -= base.left;
-		y -= base.top;
+		x -= current.left;
+		y -= current.top;
 
-		new Animation(time, animate, function(ratio)
+		new Animation(duration, transition, function(ratio)
 		{
 			$(child).css(
 			{
-				top: base.top + y * ratio,
-				left: base.left + x * ratio
+				top: current.top + (y * ratio),
+				left: current.left + (x * ratio)
 			});
 		});
 	};
@@ -372,9 +376,9 @@
 
 	/* Animation constructor */
 
-	var Animation = function(length, transition, callback)
+	var Animation = function(duration, transition, callback)
 	{
-		this.b = (this.a = time()) + length * 1000;
+		this.b = (this.a = time()) + (duration * 1000);
 
 		if(typeof(transition) != 'function')
 		{
@@ -391,7 +395,7 @@
 
 	Animation.stack = [];
 
-	Animation.init = function(fps)
+	Animation.init = function()
 	{
 		if(this.interval)
 		{
@@ -403,7 +407,7 @@
 		{
 			that.frame();
 		},
-		Math.round(1000 / 60));
+		13);
 	};
 	Animation.push = function(animation)
 	{
@@ -413,17 +417,21 @@
 		}
 		this.stack.push(animation);
 	};
-	Animation.frame = function(x)
+	Animation.frame = function(x, t)
 	{
 		if(x != undefined)
 		{
 			this.stack.splice(x, 1);
 		}
+		t = t || time();
+
 		for(var i = x || 0; i < this.stack.length; i++)
 		{
-			if(!this.stack[i].frame())
+			if(!this.stack[i].frame(t))
 			{
-				this.frame(i); return;
+				this.frame(i, t);
+
+				return;
 			}
 		}
 	};
@@ -434,11 +442,11 @@
 
 	/* Animation prototype */
 
-	Animation.prototype.frame = function()
+	Animation.prototype.frame = function(time)
 	{
 		var ratio = Math.min(1, this.transition
 		(
-			time() - this.a, this.b - this.a
+			time - this.a, this.b - this.a
 		));
 		this.callback(ratio);
 
