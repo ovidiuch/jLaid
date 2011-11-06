@@ -37,6 +37,26 @@ html, body {
 	<script src="jquery.jlaid.js"></script>
 
 	<script>
+
+transitions = {};
+
+transitions.linear = function(current, total)
+{
+	return current / total;
+};
+transitions.easeInQuint = function(current, total)
+{
+	return (current /= total) * current * current * current * current;
+};
+transitions.easeInExpo = function(current, total)
+{
+	return (current == 0) ? 0 : Math.pow(2, 10 * (current / total - 1)) - 1 * 0.001;
+};
+transitions.easeInBack = function(current, total, overshoot)
+{
+	return (current /= total) * current * ((overshoot + 1) * current - overshoot);
+};
+
 $(function()
 {
 	var sizes = [0, 110, 230];
@@ -70,27 +90,20 @@ $(function()
 
 		$('.grid').append('<li class="child-' + i + '"><p style="width: ' + w + 'px; height: ' + h + 'px;">' + (Number(i) + 1) + '</p></li>');
 	}
-	//$('.grid li p').each(function()
-	//{
-	//	$(this).html('<strong>' + (++i) + '</strong>. ' + $(this).html());
-	//
-	//	$(this).width(s[0] - 20);
-	//	$(this).height(s2[0] - 16);
-	//});
 	window.laid = $('.grid').laid(
 	{
-		animate: false,
-		debug: true,
+		animate: transitions.linear,
+		//debug: true,
 		wait: true
 	})
-	.laid('.child-18',
-	{
-		animate: true
-	})
-	.laid('.child-3',
-	{
-		animate: true
-	})
+	//.laid('.child-18',
+	//{
+	//	animate: true
+	//})
+	//.laid('.child-3',
+	//{
+	//	animate: true
+	//})
 	.laid('init');
 });
 	</script>
@@ -114,7 +127,7 @@ $(function()
 		<!--<li><p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p></li>-->
 		<!--<li><p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p></li>-->
 	</ul>
-	<!--<ul class="grid"></ul>-->
+	<ul class="grid"></ul>
 	<!--<ul class="grid">
 		<li><p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p></li>
 		<li><p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p></li>

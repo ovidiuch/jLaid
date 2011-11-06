@@ -39,6 +39,7 @@
 		animate: true,
 		debug: false,
 		delay: 200,
+		time: 0.35,
 		stretch: false,
 		responsive: false,
 		wait: false
@@ -57,10 +58,6 @@
 			}
 		}
 		return copy;
-	};
-	Laid.time = function()
-	{
-		return new Date().getTime();
 	};
 
 	/* Laid prototype */
@@ -139,7 +136,7 @@
 	{
 		this.log('building...');
 
-		var t = Laid.time();
+		var t = time();
 
 		this.lines = [ new Line() ];
 		this.stack = [];
@@ -157,11 +154,13 @@
 			));
 			this.set(c, next.x, next.y, init);
 		};
+		$(this.wrapper).height(this.lines[this.lines.length - 1].y);
+
 		if(!this.option('debug'))
 		{
 			return;
 		}
-		t = Laid.time() - t;
+		t = time() - t;
 
 		this.each(function(i, line)
 		{
@@ -287,15 +286,27 @@
 	{
 		var animate = this.option('animate', child);
 
-		if(typeof(animate) == 'function')
+		if(!animate || init)
 		{
-			return animate.call(child, x, y, init);
+			$(child).css({ left: x, top: y }); return;
 		}
-		if(animate && !init)
+		//return $(child).stop().animate({ left: x, top: y }); // find out why faster?
+
+		var time = this.option('time', child);
+
+		var base = $(child).position();
+
+		x -= base.left;
+		y -= base.top;
+
+		new Animation(time, animate, function(ratio)
 		{
-			return $(child).stop().animate({ left: x, top: y });
-		}
-		return $(child).css({ left: x, top: y });
+			$(child).css(
+			{
+				top: base.top + y * ratio,
+				left: base.left + x * ratio
+			});
+		});
 	};
 	Laid.prototype.log = function(message)
 	{
@@ -349,6 +360,88 @@
 		{
 			this.splice(index, 0, block);
 		}
+	};
+
+	/* Animation constructor */
+
+	var Animation = function(length, transition, callback)
+	{
+		this.b = (this.a = time()) + length * 1000;
+
+		if(typeof(transition) != 'function')
+		{
+			transition = Animation.linear;
+		}
+		this.transition = transition;
+
+		this.callback = callback || function(){};
+
+		Animation.push(this);
+	};
+
+	/* Animation static */
+
+	Animation.stack = [];
+
+	Animation.init = function(fps)
+	{
+		if(this.interval)
+		{
+			window.clearInterval(this.interval);
+		}
+		var that = this;
+
+		this.interval = window.setInterval(function()
+		{
+			that.frame();
+		},
+		Math.round(1000 / 60));
+	};
+	Animation.push = function(animation)
+	{
+		if(!this.interval)
+		{
+			this.init();
+		}
+		this.stack.push(animation);
+	};
+	Animation.frame = function(x)
+	{
+		if(x != undefined)
+		{
+			this.stack.splice(x, 1);
+		}
+		for(var i = x || 0; i < this.stack.length; i++)
+		{
+			if(!this.stack[i].frame())
+			{
+				this.frame(i); return;
+			}
+		}
+	};
+	Animation.linear = function(current, total)
+	{
+		return current / total;
+	};
+
+	/* Animation prototype */
+
+	Animation.prototype.frame = function()
+	{
+		var ratio = Math.min(1, this.transition
+		(
+			time() - this.a, this.b - this.a
+		));
+		this.callback(ratio);
+
+		return ratio < 1;
+	};
+
+	/* time */
+
+	var time = function()
+	{
+		return new Date().getTime();
 	};
 
 	/* plugin */
