@@ -21,15 +21,18 @@ html, body {
 	list-style-type: none;
 }
 .grid li {
-	/*width: 250px;*/
-	padding: 0 10px 10px 0;
 	float: left;
+	padding: 0 10px 10px 0;
 }
-.grid li p {
-	/*padding: 8px 10px;*/
+.grid .inner {
+	width: 100%;
+	height: 100%;
 	background: #fff;
 	box-shadow: 4px 4px rgba(0, 0, 0, 0.15);
 	overflow: hidden;
+}
+.grid li p {
+	padding: 8px 10px;
 }
 	</style>
 
@@ -88,7 +91,7 @@ $(function()
 		var w = sizes[boxes[i][0]]/* - 20*/;
 		var h = sizes[boxes[i][1]]/* - 16*/;
 
-		$('.grid').append('<li class="child-' + i + '"><p style="width: ' + w + 'px; height: ' + h + 'px;">' + (Number(i) + 1) + '</p></li>');
+		$('.grid').append('<li class="child-' + i + '" style="width: ' + w + 'px; height: ' + h + 'px;"><div class="inner"><p>' + (Number(i) + 1) + '</p></div></li>');
 	}
 	window.laid = $('.grid').laid(
 	{

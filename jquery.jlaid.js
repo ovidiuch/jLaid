@@ -66,11 +66,6 @@
 	{
 		$(this.wrapper).css('position', 'relative');
 
-		this.children.each(function()
-		{
-			$.data(this, 'width', $(this).outerWidth());
-			$.data(this, 'inner', $(this).outerWidth() - $(this).width());
-		});
 		this.children.css('position', 'absolute');
 
 		var that = this;
@@ -140,7 +135,7 @@
 		},
 		this.option('delay'));
 	};
-	Laid.prototype.refresh = function(init)
+	Laid.prototype.refresh = function(init, focused)
 	{
 		this.log('building...');
 
@@ -152,15 +147,25 @@
 
 		var next, that = this;
 
+		if(focused)
+		{
+			this.append(focused);
+		}
 		for(var i = 0, c; i < this.children.length; i++)
 		{
-			c = this.children[i];
+			if(focused && this.children[i] == focused.child)
+			{
+				this.set(focused.child, focused.x, focused.y, init);
+
+				continue;
+			}
+			c = $(this.children[i]);
 
 			this.append(next = that.next
 			(
-				$.data(c, 'width'), $(c).outerHeight()
+				c.outerWidth(), c.outerHeight()
 			));
-			this.set(c, next.x, next.y, init);
+			this.set(this.children[i], next.x, next.y, init);
 		};
 		$(this.wrapper).height(this.lines[this.lines.length - 1].y);
 
@@ -292,9 +297,9 @@
 	};
 	Laid.prototype.set = function(child, x, y, init)
 	{
-		var current = $(child).position();
+		var base = $(child).position();
 
-		if(current.left == x && current.top == y)
+		if(base.left == x && base.top == y)
 		{
 			return;
 		}
@@ -308,17 +313,40 @@
 		}
 		var duration = this.option('duration', child);
 
-		x -= current.left;
-		y -= current.top;
+		x -= base.left;
+		y -= base.top;
 
 		new Animation(duration, transition, function(ratio)
 		{
 			$(child).css(
 			{
-				top: current.top + (y * ratio),
-				left: current.left + (x * ratio)
+				left: base.left + (x * ratio),
+				top: base.top + (y * ratio)
 			});
 		});
+	};
+	Laid.prototype.focus = function(child, width, height)
+	{
+		if(typeof(child) == 'number')
+		{
+			child = this.children[child - 1];
+		}
+		var c = $(child), block = { child: child };
+
+		c.width(width);
+		c.height(height);
+
+		var position = c.position();
+
+		block.x = position.left;
+		block.y = position.top;
+
+		block.width = c.outerWidth();
+		block.height = c.outerHeight();
+
+		// handle when block is outside bounds
+
+		this.refresh(false, block);
 	};
 	Laid.prototype.log = function(message)
 	{
@@ -466,7 +494,7 @@
 	{
 		var plugin, methods =
 		[
-			'init', 'refresh'
+			'init', 'refresh', 'focus'
 		];
 		return (plugin = function(query, args)
 		{
@@ -507,7 +535,7 @@
 
 /* Array.prototype.indexOf */
 
-if(!Array.prototype.indexOf)
+if(!Array.prototype.indexOf) // hmm, not good
 {
 	Array.prototype.indexOf = function(obj, start)
 	{
