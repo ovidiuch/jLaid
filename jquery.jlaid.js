@@ -94,14 +94,22 @@
 		}
 		return this.options[name];
 	};
-	Laid.prototype.update = function(child, options)
+	Laid.prototype.update = function(options, handle)
 	{
-		if(typeof($.data(child, 'options')) != 'object')
-		{
-			$.data(child, 'options', {});
-		}
-		var o = $.data(child, 'options');
+		var o = this.options;
 
+		if($.makeArray(this.children).indexOf(handle) != -1)
+		{
+			if(typeof($.data(handle, 'options')) != 'object')
+			{
+				$.data(handle, 'options', {});
+			}
+			o = $.data(handle, 'options');
+		}
+		else if(handle && handle != this.wrapper)
+		{
+			return;
+		}
 		for(var i in options)
 		{
 			o[i] = options[i];
@@ -466,7 +474,7 @@
 					});
 					return this;
 				}
-				query = this.find(query);
+				query = this.closest(query).add(this.find(query));
 			}
 			else if(query == null)
 			{
@@ -478,9 +486,9 @@
 			{
 				if(!$.data(this, 'laid'))
 				{
-					return new Laid(this, args);
+					return new Laid(this, Laid.copy(args));
 				}
-				return $.data(this, 'laid').update(this, args);
+				return $.data(this, 'laid').update(args, this);
 			});
 			return this;
 		})
