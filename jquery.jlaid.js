@@ -66,6 +66,19 @@
 	{
 		$(this.wrapper).css('position', 'relative');
 
+		this.children.each(function()
+		{
+			var size = $.data(this, 'size',
+			{
+				width: $(this).outerWidth(),
+				height: $(this).outerHeight()
+			});
+			$.data(this, 'padding',
+			{
+				width: size.width - $(this).width(),
+				height: size.height - $(this).height()
+			});
+		});
 		this.children.css('position', 'absolute');
 
 		var that = this;
@@ -155,7 +168,7 @@
 		{
 			if(focused && this.children[i] == focused.child)
 			{
-				this.set(focused.child, focused.x, focused.y, init);
+				this.set(focused.child, focused, init);
 
 				continue;
 			}
@@ -165,7 +178,7 @@
 			(
 				c.outerWidth(), c.outerHeight()
 			));
-			this.set(this.children[i], next.x, next.y, init);
+			this.set(this.children[i], next, init);
 		};
 		$(this.wrapper).height(this.lines[this.lines.length - 1].y);
 
@@ -177,8 +190,10 @@
 
 		this.each(function(i, line)
 		{
-			that.log('line #' + (i + 1) + ' [' + line.y + ']');
-
+			that.log
+			(
+				'line #' + (i + 1) + ' [' + this.y + ' ' + this.width + ']'
+			);
 			this.each(function(j, block)
 			{
 				that.log
@@ -266,11 +281,48 @@
 
 		this.stack.push(Laid.copy(block));
 
+		this.line(block.y);
+		this.line(block.y + block.height);
+
+		for(var k = 0, s; k < this.stack.length; k++)
+		{
+			s = this.stack[k];
+
+			this.each(function(i, line)
+			{
+				if(this.y >= s.y + s.height)
+				{
+					return;
+				}
+				if(this.y < s.y)
+				{
+					if(this.width >= s.x + s.width)
+					{
+						return;
+					}
+					var j = i;
+
+					while(that.lines[j++].y < s.y)
+					{
+						if(that.lines[j].width > s.x + s.width)
+						{
+							return;
+						}
+					}
+				}
+				this.insert(s);
+			});
+		}
+	};
+	Laid.prototype.line = function(y)
+	{
+		var index = 0;
+
 		this.each(function(i, line)
 		{
-			if(this.y >= block.y + block.height)
+			if(this.y >= y)
 			{
-				if(this.y == block.y + block.height)
+				if(this.y == y)
 				{
 					index = -1;
 				}
@@ -280,48 +332,48 @@
 		});
 		if(index != -1)
 		{
-			this.lines.splice(index, 0, new Line(block.y + block.height));
-		}
-		for(var k = 0, s; k < this.stack.length; k++)
-		{
-			s = this.stack[k];
-
-			this.each(function(i, line)
-			{
-				if(this.y >= s.y && this.y < s.y + s.height)
-				{
-					this.insert(s);
-				}
-			});
+			this.lines.splice(index, 0, new Line(y));
 		}
 	};
-	Laid.prototype.set = function(child, x, y, init)
+	Laid.prototype.set = function(child, block, init)
 	{
 		var base = $(child).position();
 
+		base.width = $(child).width();
+		base.height = $(child).height();
+
 		if(base.left == x && base.top == y)
 		{
-			return;
+			//return;
 		}
 		var transition = this.option('transition', child);
 
 		if(!transition || init)
 		{
-			$(child).css({ left: x, top: y });
+			$(child).css({ left: block.x, top: block.y });
 
 			return;
 		}
 		var duration = this.option('duration', child);
 
-		x -= base.left;
-		y -= base.top;
+		var x = block.x - base.left;
+		var y = block.y - base.top;
+
+		var padding = $.data(child, 'padding');
+
+		var width = block.width - base.width - padding.width;
+		var height = block.height - base.height - padding.height;
+
+		// update child $.data
 
 		new Animation(duration, transition, function(ratio)
 		{
 			$(child).css(
 			{
 				left: base.left + (x * ratio),
-				top: base.top + (y * ratio)
+				top: base.top + (y * ratio),
+				width: base.width + (width * ratio),
+				height: base.height + (height * ratio)
 			});
 		});
 	};
@@ -333,16 +385,15 @@
 		}
 		var c = $(child), block = { child: child };
 
-		c.width(width);
-		c.height(height);
-
 		var position = c.position();
 
-		block.x = position.left;
-		block.y = position.top;
+		var size = $.data(child, 'size');
 
-		block.width = c.outerWidth();
-		block.height = c.outerHeight();
+		block.width = width;
+		block.height = height;
+
+		block.x = position.left - Math.round((width - size.width) / 2);
+		block.y = position.top - Math.round((height - size.height) / 2);
 
 		// handle when block is outside bounds
 
@@ -361,6 +412,8 @@
 	var Line = function(y)
 	{
 		this.y = y || 0;
+
+		this.width = 0;
 	};
 
 	/* Line prototype */
@@ -398,6 +451,10 @@
 		});
 		if(index != -1)
 		{
+			if(block.x + block.width > this.width)
+			{
+				this.width = block.x + block.width;
+			}
 			this.splice(index, 0, block);
 		}
 	};
