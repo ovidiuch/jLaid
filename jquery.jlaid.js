@@ -16,13 +16,8 @@
 		});
 		$.data(wrapper, 'laid', this);
 
-		for(var i in Laid.defaults)
-		{
-			if(options[i] === undefined)
-			{
-				options[i] = Laid.defaults[i];
-			}
-		}
+		options = Laid.args(options, Laid.defaults);
+
 		this.wrapper = wrapper;
 		this.options = options;
 
@@ -58,6 +53,21 @@
 			}
 		}
 		return copy;
+	};
+	Laid.args = function(block, defaults)
+	{
+		for(var i in defaults)
+		{
+			if(!defaults.hasOwnProperty(i))
+			{
+				continue;
+			}
+			if(block[i] === undefined)
+			{
+				block[i] = defaults[i];
+			}
+		}
+		return block;
 	};
 
 	/* Laid prototype */
@@ -337,67 +347,94 @@
 	};
 	Laid.prototype.set = function(child, block, init)
 	{
-		var base = $(child).position();
+		var base = this.block(child);
 
-		base.width = $(child).width();
-		base.height = $(child).height();
-
-		if(base.left == x && base.top == y)
+		if(base.x == block.x
+		&& base.y == block.y
+		&& base.width == block.width
+		&& base.height == block.height)
 		{
-			//return;
+			return;
 		}
+		var padding = $.data(child, 'padding');
+
 		var transition = this.option('transition', child);
 
 		if(!transition || init)
 		{
-			$(child).css({ left: block.x, top: block.y });
-
+			$(child).css(
+			{
+				left: block.x,
+				top: block.y,
+				width: block.width - padding.width,
+				height: block.height - padding.height
+			});
 			return;
 		}
-		var duration = this.option('duration', child);
-
-		var x = block.x - base.left;
-		var y = block.y - base.top;
-
-		var padding = $.data(child, 'padding');
-
-		var width = block.width - base.width - padding.width;
-		var height = block.height - base.height - padding.height;
+		var x = block.x - base.x;
+		var y = block.y - base.y;
+		var width = block.width - base.width;
+		var height = block.height - base.height;
 
 		// update child $.data
+
+		var duration = this.option('duration', child);
 
 		new Animation(duration, transition, function(ratio)
 		{
 			$(child).css(
 			{
-				left: base.left + (x * ratio),
-				top: base.top + (y * ratio),
-				width: base.width + (width * ratio),
-				height: base.height + (height * ratio)
+				left: base.x + (x * ratio),
+				top: base.y + (y * ratio),
+				width: base.width + (width * ratio) - padding.width,
+				height: base.height + (height * ratio) - padding.height
 			});
 		});
 	};
-	Laid.prototype.focus = function(child, width, height)
+	Laid.prototype.focus = function(args)
 	{
-		if(typeof(child) == 'number')
+		if(!args.child)
 		{
-			child = this.children[child - 1];
+			return;
 		}
-		var c = $(child), block = { child: child };
+		if(typeof(args.child) == 'number')
+		{
+			args.child = this.children[args.child - 1];
+		}
+		var children = $.makeArray(this.children);
 
-		var position = c.position();
+		if(children.indexOf(args.child) == -1)
+		{
+			return;
+		}
+		var base = this.block(args.child);
 
-		var size = $.data(child, 'size');
+		base.center = false;
 
-		block.width = width;
-		block.height = height;
+		var block = Laid.args(args, base);
 
-		block.x = position.left - Math.round((width - size.width) / 2);
-		block.y = position.top - Math.round((height - size.height) / 2);
-
-		// handle when block is outside bounds
+		if(block.center)
+		{
+			block.x -= (block.width - base.width) / 2;
+			block.y -= (block.height - base.height) / 2;
+		}
+		block.x = Math.max(block.x, 0);
+		block.x = Math.min(block.x, this.width - block.width);
+		block.y = Math.max(block.y, 0);
 
 		this.refresh(false, block);
+	};
+	Laid.prototype.block = function(child)
+	{
+		var block = {}, position = $(child).position();
+
+		block.x = position.left;
+		block.y = position.top;
+
+		block.width = $(child).outerWidth();
+		block.height = $(child).outerHeight();
+
+		return block;
 	};
 	Laid.prototype.log = function(message)
 	{
@@ -559,6 +596,10 @@
 			{
 				if(methods.indexOf(query) != -1)
 				{
+					if(!(args instanceof Array))
+					{
+						args = [args];
+					}
 					$(this).each(function()
 					{
 						var laid = $.data(this, 'laid');
