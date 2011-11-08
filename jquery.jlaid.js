@@ -281,8 +281,8 @@
 
 		this.stack.push($.extend({}, block));
 
-		this.line(block.y);
-		this.line(block.y + block.height);
+		this.insert(block.y);
+		this.insert(block.y + block.height);
 
 		for(var k = 0, s; k < this.stack.length; k++)
 		{
@@ -314,7 +314,7 @@
 			});
 		}
 	};
-	Laid.prototype.line = function(y)
+	Laid.prototype.insert = function(y)
 	{
 		var index = 0;
 
