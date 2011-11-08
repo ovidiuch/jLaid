@@ -39,7 +39,7 @@
 		transition: true,
 		wait: false
 	};
-	Laid.INFINITE = 999999;
+	Laid.INFINITY = 999999;
 
 	Laid.args = function(block, defaults)
 	{
@@ -210,7 +210,7 @@
 	};
 	Laid.prototype.next = function(width, height)
 	{
-		var next = { x: Laid.INFINITE, y: Laid.INFINITE, f: 0 }, that = this;
+		var next = new Block(), that = this;
 
 		this.each(function(i, line)
 		{
@@ -337,7 +337,7 @@
 	};
 	Laid.prototype.set = function(child, block, init)
 	{
-		var base = this.block(child);
+		var base = new Block(child);
 
 		if(base.x == block.x
 		&& base.y == block.y
@@ -395,7 +395,7 @@
 		{
 			return;
 		}
-		var base = this.block(args.child);
+		var base = new Block(args.child);
 
 		base.center = false;
 
@@ -411,18 +411,6 @@
 		block.y = Math.max(block.y, 0);
 
 		this.refresh(false, block);
-	};
-	Laid.prototype.block = function(child)
-	{
-		var block = {}, position = $(child).position();
-
-		block.x = position.left;
-		block.y = position.top;
-
-		block.width = $(child).outerWidth();
-		block.height = $(child).outerHeight();
-
-		return block;
 	};
 	Laid.prototype.log = function(message)
 	{
@@ -483,6 +471,25 @@
 			this.splice(index, 0, block);
 		}
 	};
+
+	/* Block constructor */
+
+	var Block = function(child)
+	{
+		if(!child)
+		{
+			this.x = this.y = Laid.INFINITY;
+
+			return;
+		}
+		var c = $(child), position = c.position();
+
+		this.x = position.left;
+		this.y = position.top;
+
+		this.width = c.outerWidth();
+		this.height = c.outerHeight();
+	}
 
 	/* Animation constructor */
 
