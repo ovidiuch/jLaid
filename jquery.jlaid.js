@@ -41,19 +41,6 @@
 	};
 	Laid.INFINITE = 999999;
 
-	Laid.copy = function(block)
-	{
-		var copy = {};
-
-		for(var i in block)
-		{
-			if(block.hasOwnProperty(i))
-			{
-				copy[i] = block[i];
-			}
-		}
-		return copy;
-	};
 	Laid.args = function(block, defaults)
 	{
 		for(var i in defaults)
@@ -116,7 +103,7 @@
 	{
 		var o = this.options;
 
-		if($.makeArray(this.children).indexOf(handle) != -1)
+		if($.inArray(handle, $.makeArray(this.children)) != -1)
 		{
 			if(typeof($.data(handle, 'options')) != 'object')
 			{
@@ -289,7 +276,7 @@
 	{
 		var index = 0, that = this;
 
-		this.stack.push(Laid.copy(block));
+		this.stack.push($.extend({}, block));
 
 		this.line(block.y);
 		this.line(block.y + block.height);
@@ -401,9 +388,7 @@
 		{
 			args.child = this.children[args.child - 1];
 		}
-		var children = $.makeArray(this.children);
-
-		if(children.indexOf(args.child) == -1)
+		if($.inArray(args.child, $.makeArray(this.children)) == -1)
 		{
 			return;
 		}
@@ -594,9 +579,9 @@
 		{
 			if(typeof(query) == 'string')
 			{
-				if(methods.indexOf(query) != -1)
+				if($.inArray(query, methods) != -1)
 				{
-					if(!(args instanceof Array))
+					if(!$.isArray(args))
 					{
 						args = [args];
 					}
@@ -620,7 +605,7 @@
 			{
 				if(!$.data(this, 'laid'))
 				{
-					return new Laid(this, Laid.copy(args));
+					return new Laid(this, $.extend({}, args));
 				}
 				return $.data(this, 'laid').update(args, this);
 			});
@@ -630,20 +615,3 @@
 	};
 })
 (jQuery, window, document);
-
-/* Array.prototype.indexOf */
-
-if(!Array.prototype.indexOf) // hmm, not good
-{
-	Array.prototype.indexOf = function(obj, start)
-	{
-		for(var i = (start || 0), n = this.length; i < n; i++)
-		{
-			if(this[i] === obj)
-			{
-				return i;
-			}
-		}
-		return -1;
-	};
-}
