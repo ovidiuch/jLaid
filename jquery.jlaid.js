@@ -149,13 +149,11 @@
 	{
 		this.log('building...');
 
-		var t = time();
+		var t = time(), next;
 
 		this.lines = [ new Line() ];
 		this.stack = [];
 		this.width = $(this.wrapper).width();
-
-		var next, that = this;
 
 		if(focused)
 		{
@@ -171,7 +169,7 @@
 			}
 			c = $(this.children[i]);
 
-			this.append(next = that.next
+			this.append(next = this.next
 			(
 				c.outerWidth(), c.outerHeight()
 			));
@@ -179,17 +177,22 @@
 		};
 		$(this.wrapper).height(this.lines[this.lines.length - 1].y);
 
-		if(!this.option('debug'))
+		if(this.option('debug'))
 		{
-			return;
+			this.print(time() - t);
 		}
-		t = time() - t;
+	};
+	Laid.prototype.print = function(time)
+	{
+		var that = this;
 
 		this.each(function(i, line)
 		{
 			that.log
 			(
-				'line #' + (i + 1) + ' [' + this.y + ' ' + this.width + ']'
+				'line #' + (i + 1) + ' [' +
+				this.y + ' ' +
+				this.width + ']'
 			);
 			this.each(function(j, block)
 			{
@@ -203,7 +206,7 @@
 				);
 			});
 		});
-		that.log('built in ' + t + 'ms');
+		that.log('built in ' + time + 'ms');
 	};
 	Laid.prototype.next = function(width, height)
 	{
