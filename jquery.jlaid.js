@@ -34,8 +34,8 @@
 		debug: false,
 		delay: 200,
 		duration: 0.4,
+		scale: false,
 		stretch: false,
-		responsive: false,
 		transition: true,
 		wait: false
 	};
@@ -145,21 +145,13 @@
 		},
 		this.option('delay'));
 	};
-	Laid.prototype.focus = function(args)
+	Laid.prototype.focus = function(args, child)
 	{
-		if(!args.child)
+		if($.inArray(child, $.makeArray(this.children)) == -1)
 		{
 			return;
 		}
-		if(typeof(args.child) == 'number')
-		{
-			args.child = this.children[args.child - 1];
-		}
-		if($.inArray(args.child, $.makeArray(this.children)) == -1)
-		{
-			return;
-		}
-		var base = new Block(args.child);
+		var base = new Block(child);
 
 		base.center = false;
 
@@ -173,6 +165,8 @@
 		block.x = Math.max(block.x, 0);
 		block.x = Math.min(block.x, this.width - block.width);
 		block.y = Math.max(block.y, 0);
+
+		block.child = child; // tmp
 
 		this.refresh(false, block);
 	};
@@ -312,7 +306,7 @@
 			{
 				return false;
 			}
-			while(this.lines[i++].y < block.y)
+			while(this.lines[i++].y < block.y && this.lines[i]) // tmp
 			{
 				if(this.lines[i].width > block.x + block.width)
 				{
@@ -485,7 +479,7 @@
 
 			return;
 		}
-		var c = $(child), position = c.position();
+		var c = $(child), position = c.position(); // get from $.data instead
 
 		this.x = position.left;
 		this.y = position.top;
@@ -588,39 +582,58 @@
 		[
 			'init', 'refresh', 'focus'
 		];
-		return (plugin = function(query, args)
+		return (plugin = function(one, two, three)
 		{
-			if(typeof(query) == 'string')
-			{
-				if($.inArray(query, methods) != -1)
-				{
-					if(!$.isArray(args))
-					{
-						args = [args];
-					}
-					$(this).each(function()
-					{
-						var laid = $.data(this, 'laid');
+			var query, method, args;
 
-						laid[query].apply(laid, args);
-					});
+			if(typeof(one) == 'string')
+			{
+				if($.inArray(one, methods) == -1)
+				{
+					query = this.closest(one).add(this.find(one));
+				}
+				else
+				{
+					method = one;
+				}
+			}
+			if(typeof(two) == 'string')
+			{
+				if(method || $.inArray(two, methods) == -1)
+				{
 					return this;
 				}
-				query = this.closest(query).add(this.find(query));
+				method = two;
 			}
-			else if(query == null)
+			args = (method ? three : two) || {};
+
+			if(!query)
 			{
 				this.laid = plugin;
 			}
-			args = args || {};
+			var laid;
 
 			(query || this).each(function()
 			{
-				if(!$.data(this, 'laid'))
+				if(!query)
 				{
 					return new Laid(this, $.extend({}, args));
 				}
-				return $.data(this, 'laid').update(args, this);
+				laid = $.data(this, 'laid');
+
+				if(method && args)
+				{
+					return laid[method].call(laid, args, this);
+				}
+				if(args)
+				{
+					return laid.update(args, this);
+				}
+				if(method)
+				{
+					return laid[method].call(laid);
+				}
+				return false;
 			});
 			return this;
 		})
