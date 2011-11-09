@@ -145,25 +145,54 @@
 		},
 		this.option('delay'));
 	};
-	Laid.prototype.refresh = function(init, focused)
+	Laid.prototype.focus = function(args)
 	{
-		this.log('building...');
+		if(!args.child)
+		{
+			return;
+		}
+		if(typeof(args.child) == 'number')
+		{
+			args.child = this.children[args.child - 1];
+		}
+		if($.inArray(args.child, $.makeArray(this.children)) == -1)
+		{
+			return;
+		}
+		var base = new Block(args.child);
 
+		base.center = false;
+
+		var block = Laid.args(args, base);
+
+		if(block.center)
+		{
+			block.x -= (block.width - base.width) / 2;
+			block.y -= (block.height - base.height) / 2;
+		}
+		block.x = Math.max(block.x, 0);
+		block.x = Math.min(block.x, this.width - block.width);
+		block.y = Math.max(block.y, 0);
+
+		this.refresh(false, block);
+	};
+	Laid.prototype.refresh = function(init, focus)
+	{
 		var t = time(), next;
 
 		this.lines = [ new Line() ];
 		this.stack = [];
 		this.width = $(this.wrapper).width();
 
-		if(focused)
+		if(focus)
 		{
-			this.append(focused);
+			this.append(focus);
 		}
 		for(var i = 0, c; i < this.children.length; i++)
 		{
-			if(focused && this.children[i] == focused.child)
+			if(focus && this.children[i] == focus.child)
 			{
-				this.set(focused.child, focused, init);
+				this.set(focus.child, focus, init);
 
 				continue;
 			}
@@ -181,32 +210,6 @@
 		{
 			this.print(time() - t);
 		}
-	};
-	Laid.prototype.print = function(time)
-	{
-		var that = this;
-
-		this.each(function(i, line)
-		{
-			that.log
-			(
-				'line #' + (i + 1) + ' [' +
-				this.y + ' ' +
-				this.width + ']'
-			);
-			this.each(function(j, block)
-			{
-				that.log
-				(
-					'> #' + (j + 1) + ' [' +
-					this.x + ' ' +
-					this.y + ' ' +
-					this.width + ' ' +
-					this.height + ']'
-				);
-			});
-		});
-		that.log('built in ' + time + 'ms');
 	};
 	Laid.prototype.next = function(width, height)
 	{
@@ -284,35 +287,40 @@
 		this.insert(block.y);
 		this.insert(block.y + block.height);
 
-		for(var k = 0, s; k < this.stack.length; k++)
+		for(var k = 0; k < this.stack.length; k++)
 		{
-			s = this.stack[k];
-
 			this.each(function(i, line)
 			{
-				if(this.y >= s.y + s.height)
+				if(that.inline(that.stack[k], i))
 				{
-					return;
+					this.insert(that.stack[k]);
 				}
-				if(this.y < s.y)
-				{
-					if(this.width >= s.x + s.width)
-					{
-						return;
-					}
-					var j = i;
-
-					while(that.lines[j++].y < s.y)
-					{
-						if(that.lines[j].width > s.x + s.width)
-						{
-							return;
-						}
-					}
-				}
-				this.insert(s);
 			});
 		}
+	};
+	Laid.prototype.inline = function(block, i)
+	{
+		var line = this.lines[i];
+
+		if(line.y >= block.y + block.height)
+		{
+			return false;
+		}
+		if(line.y < block.y)
+		{
+			if(line.width >= block.x + block.width)
+			{
+				return false;
+			}
+			while(this.lines[i++].y < block.y)
+			{
+				if(this.lines[i].width > block.x + block.width)
+				{
+					return false;
+				}
+			}
+		}
+		return true;
 	};
 	Laid.prototype.insert = function(y)
 	{
@@ -381,36 +389,31 @@
 			});
 		});
 	};
-	Laid.prototype.focus = function(args)
+	Laid.prototype.print = function(time)
 	{
-		if(!args.child)
-		{
-			return;
-		}
-		if(typeof(args.child) == 'number')
-		{
-			args.child = this.children[args.child - 1];
-		}
-		if($.inArray(args.child, $.makeArray(this.children)) == -1)
-		{
-			return;
-		}
-		var base = new Block(args.child);
+		var that = this;
 
-		base.center = false;
-
-		var block = Laid.args(args, base);
-
-		if(block.center)
+		this.each(function(i, line)
 		{
-			block.x -= (block.width - base.width) / 2;
-			block.y -= (block.height - base.height) / 2;
-		}
-		block.x = Math.max(block.x, 0);
-		block.x = Math.min(block.x, this.width - block.width);
-		block.y = Math.max(block.y, 0);
-
-		this.refresh(false, block);
+			that.log
+			(
+				'line #' + (i + 1) + ' [' +
+				this.y + ' ' +
+				this.width + ']'
+			);
+			this.each(function(j, block)
+			{
+				that.log
+				(
+					'> #' + (j + 1) + ' [' +
+					this.x + ' ' +
+					this.y + ' ' +
+					this.width + ' ' +
+					this.height + ']'
+				);
+			});
+		});
+		that.log('built in ' + time + 'ms');
 	};
 	Laid.prototype.log = function(message)
 	{
