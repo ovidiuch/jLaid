@@ -86,6 +86,27 @@
 		});
 		this.refresh(true);
 	};
+	Laid.prototype.update = function(options, handle)
+	{
+		var o = this.options;
+
+		if($.inArray(handle, $.makeArray(this.children)) != -1)
+		{
+			if(typeof($.data(handle, 'options')) != 'object')
+			{
+				$.data(handle, 'options', {});
+			}
+			o = $.data(handle, 'options');
+		}
+		else if(handle && handle != this.wrapper)
+		{
+			return;
+		}
+		for(var i in options)
+		{
+			o[i] = options[i];
+		}
+	};
 	Laid.prototype.each = function(callback)
 	{
 		for(var i = 0; i < this.lines.length; i++)
@@ -109,27 +130,6 @@
 			};
 		}
 		return this.options[name];
-	};
-	Laid.prototype.update = function(options, handle)
-	{
-		var o = this.options;
-
-		if($.inArray(handle, $.makeArray(this.children)) != -1)
-		{
-			if(typeof($.data(handle, 'options')) != 'object')
-			{
-				$.data(handle, 'options', {});
-			}
-			o = $.data(handle, 'options');
-		}
-		else if(handle && handle != this.wrapper)
-		{
-			return;
-		}
-		for(var i in options)
-		{
-			o[i] = options[i];
-		}
 	};
 	Laid.prototype.presize = function()
 	{
