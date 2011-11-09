@@ -86,6 +86,17 @@
 		});
 		this.refresh(true);
 	};
+	Laid.prototype.each = function(callback)
+	{
+		for(var i = 0; i < this.lines.length; i++)
+		{
+			if(callback.call(this.lines[i], i, this.lines[i]) === false)
+			{
+				return false;
+			}
+		}
+		return true;
+	};
 	Laid.prototype.option = function(name, child)
 	{
 		if(child)
@@ -119,17 +130,6 @@
 		{
 			o[i] = options[i];
 		}
-	};
-	Laid.prototype.each = function(callback)
-	{
-		for(var i = 0; i < this.lines.length; i++)
-		{
-			if(callback.call(this.lines[i], i, this.lines[i]) === false)
-			{
-				return false;
-			}
-		}
-		return true;
 	};
 	Laid.prototype.presize = function()
 	{
