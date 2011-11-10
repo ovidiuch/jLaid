@@ -63,10 +63,6 @@
 	{
 		$(this.wrapper).css('position', 'relative');
 
-		this.children.each(function()
-		{
-			new Block(this);
-		});
 		this.children.css('position', 'absolute');
 
 		var that = this;
@@ -330,17 +326,13 @@
 	};
 	Laid.prototype.set = function(child, block, init)
 	{
-		var base = new Block(child), that = this;
+		var b = new Block(child), diff, that = this;
 
-		if(base.x == block.x // Block diff function
-		&& base.y == block.y
-		&& base.width == block.width
-		&& base.height == block.height
-		&& !init)
+		if(!(diff = b.diff(block)))
 		{
 			return;
 		}
-		base.update(block);
+		b.update(block);
 
 		var transition = this.option('transition', child);
 
@@ -351,16 +343,11 @@
 				child,
 				block.x,
 				block.y,
-				block.width - base.h,
-				block.height - base.v
+				block.width - b.h,
+				block.height - b.v
 			);
 			return;
 		}
-		var x = block.x - base.x; // Block diff function
-		var y = block.y - base.y;
-		var width = block.width - base.width;
-		var height = block.height - base.height;
-
 		var duration = this.option('duration', child);
 
 		new Animation(duration, transition, function(ratio)
@@ -368,10 +355,10 @@
 			that.assign
 			(
 				child,
-				base.x + (x * ratio),
-				base.y + (y * ratio),
-				base.width + (width * ratio) - block.h,
-				base.height + (height * ratio) - block.v
+				b.x + (diff.x * ratio),
+				b.y + (diff.y * ratio),
+				b.width + (diff.width * ratio) - b.h,
+				b.height + (diff.height * ratio) - b.v
 			);
 		});
 	};
@@ -506,6 +493,22 @@
 
 	/* Block prototype */
 
+	Block.prototype.diff = function(block)
+	{
+		var b = $.data(this.child, 'block'), diff = {};
+
+		diff.x = block.x - b.x;
+		diff.y = block.y - b.y;
+
+		diff.width = block.width - b.width;
+		diff.height = block.height - b.height;
+
+		if(!diff.x && !diff.y && !diff.width && !diff.height)
+		{
+			return false;
+		}
+		return diff;
+	};
 	Block.prototype.update = function(block)
 	{
 		var b = $.data(this.child, 'block');
