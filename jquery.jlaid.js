@@ -149,8 +149,8 @@
 			block.x -= (block.width - base.width) / 2;
 			block.y -= (block.height - base.height) / 2;
 		}
-		block.x = Math.max(block.x, 0);
 		block.x = Math.min(block.x, this.width - block.width);
+		block.x = Math.max(block.x, 0);
 		block.y = Math.max(block.y, 0);
 
 		block.child = child; // tmp
@@ -293,7 +293,7 @@
 			{
 				return false;
 			}
-			while(this.lines[i++].y < block.y && this.lines[i]) // tmp
+			while(this.lines[i++].y < block.y)
 			{
 				if(this.lines[i].width > block.x + block.width)
 				{
