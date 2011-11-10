@@ -576,64 +576,48 @@
 
 	/* plugin */
 
+	var go = function(method)
+	{
+		$(this).each(function()
+		{
+			var laid = $.data(this, 'laid');
+			var args = $.makeArray(arguments);
+
+			args.shift();
+
+			laid[method].apply(laid, args);
+		});
+		return this;
+	};
+	var plugin;
+
 	$.fn.laid = function(options)
 	{
-		var plugin, methods =
-		[
-			'init', 'refresh', 'focus'
-		];
-		return (plugin = function(one, two, three)
+		return (plugin = function(query, args, method)
 		{
-			var query, method, args;
-
-			if(typeof(one) == 'string')
+			if(typeof(query) == 'string')
 			{
-				if($.inArray(one, methods) == -1)
-				{
-					query = this.closest(one).add(this.find(one));
-				}
-				else
-				{
-					method = one;
-				}
+				query = this.closest(query).add(this.find(query));
 			}
-			if(typeof(two) == 'string')
-			{
-				if(method || $.inArray(two, methods) == -1)
-				{
-					return this;
-				}
-				method = two;
-			}
-			args = (method ? three : two) || {};
-
 			if(!query)
 			{
-				this.laid = plugin;
+				this.laid = plugin, this.go = go;
 			}
-			var laid;
+			args = args || {};
 
 			(query || this).each(function()
 			{
-				if(!query)
+				if(!$.data(this, 'laid'))
 				{
 					return new Laid(this, $.extend({}, args));
 				}
-				laid = $.data(this, 'laid');
+				var laid = $.data(this, 'laid');
 
-				if(method && args)
-				{
-					return laid[method].call(laid, args, this);
-				}
-				if(args)
-				{
-					return laid.update(args, this);
-				}
 				if(method)
 				{
-					return laid[method].call(laid);
+					laid[method](args, this);
 				}
-				return false;
+				return laid.update(args, this);
 			});
 			return this;
 		})
