@@ -41,7 +41,7 @@
 	};
 	Laid.INFINITY = 999999;
 
-	Laid.args = function(block, defaults)
+	Laid.args = function(object, defaults, override)
 	{
 		for(var i in defaults)
 		{
@@ -49,12 +49,12 @@
 			{
 				continue;
 			}
-			if(block[i] === undefined)
+			if(object[i] === undefined || override)
 			{
-				block[i] = defaults[i];
+				object[i] = defaults[i];
 			}
 		}
-		return block;
+		return object;
 	};
 
 	/* Laid prototype */
@@ -143,24 +143,20 @@
 		{
 			return;
 		}
-		var base = new Block(child);
+		var next = Laid.args(new Block(child), args, true);
 
-		base.center = false;
+		var diff = new Block(child).diff(next);
 
-		var block = Laid.args(args, base); // tmp, should be block
-
-		if(block.center)
+		if(diff && next.center)
 		{
-			block.x -= (block.width - base.width) / 2;
-			block.y -= (block.height - base.height) / 2;
+			next.x -= diff.width / 2;
+			next.y -= diff.height / 2;
 		}
-		block.x = Math.min(block.x, this.width - block.width);
-		block.x = Math.max(block.x, 0);
-		block.y = Math.max(block.y, 0);
+		next.x = Math.min(next.x, this.width - next.width);
+		next.x = Math.max(next.x, 0);
+		next.y = Math.max(next.y, 0);
 
-		block.child = child; // tmp
-
-		this.append(block);
+		this.append(next);
 
 		this.refresh(false);
 	};
@@ -178,16 +174,14 @@
 
 		for(var i = 0; i < this.children.length; i++)
 		{
-			child = this.children[i], c = $(child);
+			c = $(child = this.children[i]), block = new Block(child);
 
-			if((block = this.found(child)))
+			if((next = this.found(child)))
 			{
-				this.set(block, block, init);
+				this.set(block, next, init);
 
 				continue;
 			}
-			block = new Block(child);
-
 			this.append(next = this.next
 			(
 				block.width, block.height
@@ -350,14 +344,12 @@
 	{
 		var diff = block.diff(next), that = this;
 
-		if(next != block)
+		if(!diff && !init)
 		{
-			if(!diff && !init)
-			{
-				return;
-			}
-			block.update(next);
+			return;
 		}
+		block.update(next);
+
 		var transition = this.option('transition', block.child);
 
 		if(!transition || init)
