@@ -65,16 +65,7 @@
 
 		this.children.each(function()
 		{
-			var size = $.data(this, 'size',
-			{
-				width: $(this).outerWidth(),
-				height: $(this).outerHeight()
-			});
-			$.data(this, 'padding',
-			{
-				width: size.width - $(this).width(),
-				height: size.height - $(this).height()
-			});
+			new Block(this);
 		});
 		this.children.css('position', 'absolute');
 
@@ -155,7 +146,7 @@
 
 		base.center = false;
 
-		var block = Laid.args(args, base);
+		var block = Laid.args(args, base); // tmp, should be block
 
 		if(block.center)
 		{
@@ -190,11 +181,11 @@
 
 				continue;
 			}
-			c = $(this.children[i]);
+			c = $(this.children[i]), b = new Block(this.children[i]);
 
 			this.append(next = this.next
 			(
-				c.outerWidth(), c.outerHeight()
+				b.width, b.height
 			));
 			this.set(this.children[i], next, init);
 		};
@@ -339,48 +330,56 @@
 	};
 	Laid.prototype.set = function(child, block, init)
 	{
-		var base = new Block(child);
+		var base = new Block(child), that = this;
 
-		if(base.x == block.x
+		if(base.x == block.x // Block diff function
 		&& base.y == block.y
 		&& base.width == block.width
-		&& base.height == block.height)
+		&& base.height == block.height
+		&& !init)
 		{
 			return;
 		}
-		var padding = $.data(child, 'padding');
+		base.update(block);
 
 		var transition = this.option('transition', child);
 
 		if(!transition || init)
 		{
-			$(child).css(
-			{
-				left: block.x,
-				top: block.y,
-				width: block.width - padding.width,
-				height: block.height - padding.height
-			});
+			this.assign
+			(
+				child,
+				block.x,
+				block.y,
+				block.width - base.h,
+				block.height - base.v
+			);
 			return;
 		}
-		var x = block.x - base.x;
+		var x = block.x - base.x; // Block diff function
 		var y = block.y - base.y;
 		var width = block.width - base.width;
 		var height = block.height - base.height;
-
-		// update child $.data
 
 		var duration = this.option('duration', child);
 
 		new Animation(duration, transition, function(ratio)
 		{
-			$(child).css(
-			{
-				left: base.x + (x * ratio),
-				top: base.y + (y * ratio),
-				width: base.width + (width * ratio) - padding.width,
-				height: base.height + (height * ratio) - padding.height
-			});
+			that.assign
+			(
+				child,
+				base.x + (x * ratio),
+				base.y + (y * ratio),
+				base.width + (width * ratio) - block.h,
+				base.height + (height * ratio) - block.v
+			);
+		});
+	};
+	Laid.prototype.assign = function(child, x, y, width, height)
+	{
+		$(child).css(
+		{
+			left: x, top: y, width: width, height: height
 		});
 	};
 	Laid.prototype.print = function(time)
@@ -473,20 +472,50 @@
 
 	var Block = function(child)
 	{
-		if(!child)
+		if(!(this.child = child))
 		{
 			this.x = this.y = Laid.INFINITY;
 
 			return;
 		}
-		var c = $(child), position = c.position(); // get from $.data instead
+		if(!$.data(child, 'block'))
+		{
+			var block = {}, c = $(child), position = c.position();
 
-		this.x = position.left;
-		this.y = position.top;
+			block.x = position.left;
+			block.y = position.top;
 
-		this.width = c.outerWidth();
-		this.height = c.outerHeight();
-	}
+			block.width = c.outerWidth();
+			block.height = c.outerHeight();
+
+			block.h = block.width - c.width();
+			block.v = block.height - c.height();
+
+			$.data(child, 'block', block);
+		}
+		var block = $.data(child, 'block');
+
+		for(var i in block)
+		{
+			if(block.hasOwnProperty(i))
+			{
+				this[i] = block[i];
+			}
+		}
+	};
+
+	/* Block prototype */
+
+	Block.prototype.update = function(block)
+	{
+		var b = $.data(this.child, 'block');
+
+		b.x = block.x;
+		b.y = block.y;
+
+		b.width = block.width;
+		b.height = block.height;
+	};
 
 	/* Animation constructor */
 
