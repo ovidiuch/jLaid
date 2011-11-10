@@ -118,6 +118,11 @@
 		}
 		return this.options[name];
 	};
+	Laid.prototype.reset = function()
+	{
+		this.lines = [ new Line() ];
+		this.stack = [];
+	};
 	Laid.prototype.presize = function()
 	{
 		if(this.timeout)
@@ -155,33 +160,37 @@
 
 		block.child = child; // tmp
 
-		this.refresh(false, block);
-	};
-	Laid.prototype.refresh = function(init, focus)
-	{
-		var t = time(), next;
+		this.append(block);
 
-		this.lines = [ new Line() ];
-		this.stack = [];
+		this.refresh(false);
+	};
+	Laid.prototype.refresh = function(init)
+	{
+		var t = time(), block, next;
+
+		if(init)
+		{
+			this.reset();
+		}
 		this.width = $(this.wrapper).width();
 
-		if(focus)
+		var child, c;
+
+		for(var i = 0; i < this.children.length; i++)
 		{
-			this.append(focus);
-		}
-		for(var i = 0, c; i < this.children.length; i++)
-		{
-			if(focus && this.children[i] == focus.child)
+			child = this.children[i], c = $(child);
+
+			if((block = this.found(this.children[i])))
 			{
-				this.set(focus.child, focus, init);
+				this.set(child, block, init);
 
 				continue;
 			}
-			c = $(this.children[i]), b = new Block(this.children[i]);
+			block = new Block(this.children[i]);
 
 			this.append(next = this.next
 			(
-				b.width, b.height
+				block.width, block.height
 			));
 			this.set(this.children[i], next, init);
 		};
@@ -191,6 +200,18 @@
 		{
 			this.print(time() - t);
 		}
+		this.reset();
+	};
+	Laid.prototype.found = function(child)
+	{
+		for(var i = 0; i < this.stack.length; i++)
+		{
+			if(this.stack[i].child == child)
+			{
+				return this.stack[i];
+			}
+		}
+		return false;
 	};
 	Laid.prototype.next = function(width, height)
 	{
@@ -324,7 +345,7 @@
 			this.lines.splice(index, 0, new Line(y));
 		}
 	};
-	Laid.prototype.set = function(child, block, init)
+	Laid.prototype.set = function(child, block, init) // remove child param and name block next
 	{
 		var b = new Block(child), diff, that = this;
 
