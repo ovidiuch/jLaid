@@ -180,19 +180,19 @@
 		{
 			child = this.children[i], c = $(child);
 
-			if((block = this.found(this.children[i])))
+			if((block = this.found(child)))
 			{
-				this.set(child, block, init);
+				this.set(block, block, init);
 
 				continue;
 			}
-			block = new Block(this.children[i]);
+			block = new Block(child);
 
 			this.append(next = this.next
 			(
 				block.width, block.height
 			));
-			this.set(this.children[i], next, init);
+			this.set(block, next, init);
 		};
 		$(this.wrapper).height(this.lines[this.lines.length - 1].y);
 
@@ -284,7 +284,8 @@
 	{
 		var index = 0, that = this;
 
-		this.stack.push($.extend({}, block));
+		//this.stack.push($.extend({}, block)); // why?
+		this.stack.push(block);
 
 		this.insert(block.y);
 		this.insert(block.y + block.height);
@@ -345,41 +346,45 @@
 			this.lines.splice(index, 0, new Line(y));
 		}
 	};
-	Laid.prototype.set = function(child, block, init) // remove child param and name block next
+	Laid.prototype.set = function(block, next, init)
 	{
-		var b = new Block(child), diff, that = this;
+		var diff = block.diff(next), that = this;
 
-		if(!(diff = b.diff(block)))
+		if(next != block)
 		{
-			return;
+			if(!diff && !init)
+			{
+				return;
+			}
+			block.update(next);
 		}
-		b.update(block);
-
-		var transition = this.option('transition', child);
+		var transition = this.option('transition', block.child);
 
 		if(!transition || init)
 		{
 			this.assign
 			(
-				child,
+				block.child,
 				block.x,
 				block.y,
-				block.width - b.h,
-				block.height - b.v
+				block.width - block.h,
+				block.height - block.v
 			);
 			return;
 		}
-		var duration = this.option('duration', child);
+		var duration = this.option('duration', block.child);
 
 		new Animation(duration, transition, function(ratio)
 		{
+			ratio = 1 - ratio;
+
 			that.assign
 			(
-				child,
-				b.x + (diff.x * ratio),
-				b.y + (diff.y * ratio),
-				b.width + (diff.width * ratio) - b.h,
-				b.height + (diff.height * ratio) - b.v
+				block.child,
+				block.x - (diff.x * ratio),
+				block.y - (diff.y * ratio),
+				block.width - (diff.width * ratio) - block.h,
+				block.height - (diff.height * ratio) - block.v
 			);
 		});
 	};
@@ -488,32 +493,40 @@
 		}
 		if(!$.data(child, 'block'))
 		{
-			var block = {}, c = $(child), position = c.position();
-
-			block.x = position.left;
-			block.y = position.top;
-
-			block.width = c.outerWidth();
-			block.height = c.outerHeight();
-
-			block.h = block.width - c.width();
-			block.v = block.height - c.height();
-
-			$.data(child, 'block', block);
+			this.init();
 		}
-		var block = $.data(child, 'block');
-
-		for(var i in block)
-		{
-			if(block.hasOwnProperty(i))
-			{
-				this[i] = block[i];
-			}
-		}
+		this.self();
 	};
 
 	/* Block prototype */
 
+	Block.prototype.init = function()
+	{
+		var b = {}, c = $(this.child), position = c.position();
+
+		b.x = position.left;
+		b.y = position.top;
+
+		b.width = c.outerWidth();
+		b.height = c.outerHeight();
+
+		b.h = b.width - c.width();
+		b.v = b.height - c.height();
+
+		$.data(this.child, 'block', b);
+	};
+	Block.prototype.self = function()
+	{
+		var b = $.data(this.child, 'block');
+
+		for(var i in b)
+		{
+			if(b.hasOwnProperty(i))
+			{
+				this[i] = b[i];
+			}
+		}
+	};
 	Block.prototype.diff = function(block)
 	{
 		var b = $.data(this.child, 'block'), diff = {};
@@ -524,7 +537,10 @@
 		diff.width = block.width - b.width;
 		diff.height = block.height - b.height;
 
-		if(!diff.x && !diff.y && !diff.width && !diff.height)
+		if(!diff.x
+		&& !diff.y
+		&& !diff.width
+		&& !diff.height)
 		{
 			return false;
 		}
@@ -539,6 +555,8 @@
 
 		b.width = block.width;
 		b.height = block.height;
+
+		this.self();
 	};
 
 	/* Animation constructor */
