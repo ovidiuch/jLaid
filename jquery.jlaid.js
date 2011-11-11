@@ -278,7 +278,6 @@
 	{
 		var index = 0, that = this;
 
-		//this.stack.push($.extend({}, block)); // why?
 		this.stack.push(block);
 
 		this.insert(block.y);
@@ -639,52 +638,27 @@
 
 	/* plugin */
 
-	var go = function(method)
+	$.fn.laid = function(method, args)
 	{
-		$(this).each(function()
+		if(typeof(method) != 'string')
 		{
-			var laid = $.data(this, 'laid');
-			var args = $.makeArray(arguments);
+			args = method;
+		}
+		args = args || {};
 
-			args.shift();
-
-			laid[method].apply(laid, args);
+		this.each(function()
+		{
+			if(!$.data(this, 'laid'))
+			{
+				return new Laid(this, $.extend({}, args));
+			}
+			if(method)
+			{
+				return $.data(this, 'laid')[method](args, this);
+			}
+			return false;
 		});
 		return this;
-	};
-	var plugin;
-
-	$.fn.laid = function(options)
-	{
-		return (plugin = function(query, args, method)
-		{
-			if(typeof(query) == 'string')
-			{
-				query = this.closest(query).add(this.find(query));
-			}
-			if(!query)
-			{
-				this.laid = plugin, this.go = go;
-			}
-			args = args || {};
-
-			(query || this).each(function()
-			{
-				if(!$.data(this, 'laid'))
-				{
-					return new Laid(this, $.extend({}, args));
-				}
-				var laid = $.data(this, 'laid');
-
-				if(method)
-				{
-					laid[method](args, this);
-				}
-				return laid.update(args, this);
-			});
-			return this;
-		})
-		.call(this, null, options);
 	};
 })
 (jQuery, window, document);
