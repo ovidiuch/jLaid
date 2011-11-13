@@ -41,17 +41,17 @@
 	};
 	Laid.INFINITY = 999999;
 
-	Laid.args = function(object, defaults, override)
+	Laid.args = function(object, args, override)
 	{
-		for(var i in defaults)
+		for(var i in args)
 		{
-			if(!defaults.hasOwnProperty(i))
+			if(!args.hasOwnProperty(i))
 			{
 				continue;
 			}
 			if(object[i] === undefined || override)
 			{
-				object[i] = defaults[i];
+				object[i] = args[i];
 			}
 		}
 		return object;
@@ -59,14 +59,20 @@
 
 	/* Laid prototype */
 
+	Laid.prototype.items = [];
+
 	Laid.prototype.init = function()
 	{
-		$(this.wrapper).css('position', 'relative');
-
-		this.children.css('position', 'absolute');
-
 		var that = this;
 
+		$(this.wrapper).css('position', 'relative');
+
+		this.children.each(function()
+		{
+			$(this).css('position', 'absolute');
+
+			that.items.push(new Block(this));
+		});
 		$(window).resize(function()
 		{
 			that.presize();
@@ -77,7 +83,7 @@
 	{
 		var o = this.options;
 
-		if($.inArray(handle, $.makeArray(this.children)) != -1)
+		if(this.children.find(handle))
 		{
 			if(typeof($.data(handle, 'options')) != 'object')
 			{
@@ -123,6 +129,17 @@
 		this.lines = [ new Line() ];
 		this.stack = [];
 	};
+	Laid.prototype.find = function(child)
+	{
+		for(var i in this.items)
+		{
+			if(this.items[i].child == child)
+			{
+				return this.items[i];
+			}
+		}
+		return false;
+	};
 	Laid.prototype.presize = function()
 	{
 		if(this.timeout)
@@ -139,13 +156,15 @@
 	};
 	Laid.prototype.focus = function(args, child)
 	{
-		if($.inArray(child, $.makeArray(this.children)) == -1)
+		var block = this.find(child);
+
+		if(!block)
 		{
 			return;
 		}
-		var next = Laid.args(new Block(child), args, true);
+		var next = Laid.args(block.next, args, true);
 
-		var diff = new Block(child).diff(next);
+		var diff = block.diff(block.next);
 
 		if(diff && next.center)
 		{
@@ -160,9 +179,21 @@
 
 		this.refresh(false);
 	};
+	Laid.prototype.blur = function(args, child)
+	{
+		var block = this.find(child);
+
+		if(!block)
+		{
+			return;
+		}
+		block.revert(); // still already thinks it's there
+
+		this.refresh(false);
+	};
 	Laid.prototype.refresh = function(init)
 	{
-		var t = time(), block, next;
+		var t = time();
 
 		if(init)
 		{
@@ -170,23 +201,18 @@
 		}
 		this.width = $(this.wrapper).width();
 
-		var child, c;
-
-		for(var i = 0; i < this.children.length; i++)
+		for(var i = 0, block; i < this.items.length; i++)
 		{
-			c = $(child = this.children[i]), block = new Block(child);
+			block = this.items[i];
 
-			if((next = this.found(child)))
+			if($.inArray(block.next, this.stack) == -1)
 			{
-				this.set(block, next, init);
-
-				continue;
+				this.append(block.next = this.next
+				(
+					block.width, block.height
+				));
 			}
-			this.append(next = this.next
-			(
-				block.width, block.height
-			));
-			this.set(block, next, init);
+			this.set(block, init);
 		};
 		$(this.wrapper).height(this.lines[this.lines.length - 1].y);
 
@@ -196,20 +222,11 @@
 		}
 		this.reset();
 	};
-	Laid.prototype.found = function(child)
-	{
-		for(var i = 0; i < this.stack.length; i++)
-		{
-			if(this.stack[i].child == child)
-			{
-				return this.stack[i];
-			}
-		}
-		return false;
-	};
 	Laid.prototype.next = function(width, height)
 	{
-		var next = new Block(), that = this;
+		var next = { width: width, height: height }, that = this;
+
+		next.x = next.y = Laid.INFINITY;
 
 		this.each(function(i, line)
 		{
@@ -222,7 +239,7 @@
 				next.x = 0;
 				next.y = this.y;
 			}
-			this.each(function(j, block)
+			this.each(function(j, box)
 			{
 				if(this.x > next.x && line.y == next.y)
 				{
@@ -235,9 +252,6 @@
 				}
 			});
 		});
-		next.width = width;
-		next.height = height;
-
 		return next;
 	};
 	Laid.prototype.check = function(x, y, width, height)
@@ -252,7 +266,7 @@
 			{
 				return true;
 			}
-			return this.each(function(j, block)
+			return this.each(function(j, box)
 			{
 				if(x >= this.x + this.width)
 				{
@@ -274,14 +288,14 @@
 			});
 		});
 	};
-	Laid.prototype.append = function(block)
+	Laid.prototype.append = function(box)
 	{
 		var index = 0, that = this;
 
-		this.stack.push(block);
+		this.stack.push(box);
 
-		this.insert(block.y);
-		this.insert(block.y + block.height);
+		this.line(box.y);
+		this.line(box.y + box.height);
 
 		for(var k = 0; k < this.stack.length; k++)
 		{
@@ -289,28 +303,28 @@
 			{
 				if(that.inline(that.stack[k], i))
 				{
-					this.insert(that.stack[k]);
+					this.box(that.stack[k]);
 				}
 			});
 		}
 	};
-	Laid.prototype.inline = function(block, i)
+	Laid.prototype.inline = function(box, i)
 	{
 		var line = this.lines[i];
 
-		if(line.y >= block.y + block.height)
+		if(line.y >= box.y + box.height)
 		{
 			return false;
 		}
-		if(line.y < block.y)
+		if(line.y < box.y)
 		{
-			if(line.width >= block.x + block.width)
+			if(line.width >= box.x + box.width)
 			{
 				return false;
 			}
-			while(this.lines[i++].y < block.y)
+			while(this.lines[i++].y < box.y)
 			{
-				if(this.lines[i].width > block.x + block.width)
+				if(this.lines[i].width > box.x + box.width)
 				{
 					return false;
 				}
@@ -318,7 +332,7 @@
 		}
 		return true;
 	};
-	Laid.prototype.insert = function(y)
+	Laid.prototype.line = function(y)
 	{
 		var index = 0;
 
@@ -339,15 +353,15 @@
 			this.lines.splice(index, 0, new Line(y));
 		}
 	};
-	Laid.prototype.set = function(block, next, init)
+	Laid.prototype.set = function(block, init)
 	{
-		var diff = block.diff(next), that = this;
+		var diff = block.diff(block.next), that = this;
 
 		if(!diff && !init)
 		{
 			return;
 		}
-		block.update(next);
+		block.update(block.next);
 
 		var transition = this.option('transition', block.child);
 
@@ -365,7 +379,7 @@
 		}
 		var duration = this.option('duration', block.child);
 
-		new Animation(duration, transition, function(ratio)
+		new Animation(block, duration, transition, function(ratio)
 		{
 			ratio = 1 - ratio;
 
@@ -398,7 +412,7 @@
 				this.y + ' ' +
 				this.width + ']'
 			);
-			this.each(function(j, block)
+			this.each(function(j, box)
 			{
 				that.log
 				(
@@ -444,19 +458,19 @@
 		}
 		return true;
 	};
-	Line.prototype.insert = function(block)
+	Line.prototype.box = function(box)
 	{
 		var index = 0;
 
 		this.each(function(j)
 		{
-			if(this == block)
+			if(this == box)
 			{
 				index = -1;
 
 				return false;
 			}
-			if(this.x <= block.x)
+			if(this.x <= box.x)
 			{
 				index = j + 1;
 			}
@@ -464,11 +478,11 @@
 		});
 		if(index != -1)
 		{
-			if(block.x + block.width > this.width)
+			if(box.x + box.width > this.width)
 			{
-				this.width = block.x + block.width;
+				this.width = box.x + box.width;
 			}
-			this.splice(index, 0, block);
+			this.splice(index, 0, box);
 		}
 	};
 
@@ -476,57 +490,51 @@
 
 	var Block = function(child)
 	{
-		if(!(this.child = child))
-		{
-			this.x = this.y = Laid.INFINITY;
-
-			return;
-		}
-		if(!$.data(child, 'block'))
+		if((this.child = child))
 		{
 			this.init();
 		}
-		this.self();
 	};
 
 	/* Block prototype */
 
 	Block.prototype.init = function()
 	{
-		var b = {}, c = $(this.child), position = c.position();
+		var c = $(this.child), position = c.position();
 
-		b.x = position.left;
-		b.y = position.top;
+		this.x = position.left;
+		this.y = position.top;
 
-		b.width = c.outerWidth();
-		b.height = c.outerHeight();
+		this.width = c.outerWidth();
+		this.height = c.outerHeight();
 
-		b.h = b.width - c.width();
-		b.v = b.height - c.height();
+		this.h = this.width - c.width();
+		this.v = this.height - c.height();
 
-		$.data(this.child, 'block', b);
-	};
-	Block.prototype.self = function()
-	{
-		var b = $.data(this.child, 'block');
-
-		for(var i in b)
+		this.original =
 		{
-			if(b.hasOwnProperty(i))
-			{
-				this[i] = b[i];
-			}
-		}
+			width: this.width,
+			height: this.height
+		};
+		this.next = {};
 	};
-	Block.prototype.diff = function(block)
+	Block.prototype.update = function(box)
 	{
-		var b = $.data(this.child, 'block'), diff = {};
+		Laid.args(this, box, true);
+	};
+	Block.prototype.revert = function()
+	{
+		this.update(this.original);
+	};
+	Block.prototype.diff = function(box)
+	{
+		var diff = {};
 
-		diff.x = block.x - b.x;
-		diff.y = block.y - b.y;
+		diff.x = box.x - this.x;
+		diff.y = box.y - this.y;
 
-		diff.width = block.width - b.width;
-		diff.height = block.height - b.height;
+		diff.width = box.width - this.width;
+		diff.height = box.height - this.height;
 
 		if(!diff.x
 		&& !diff.y
@@ -537,23 +545,13 @@
 		}
 		return diff;
 	};
-	Block.prototype.update = function(block)
-	{
-		var b = $.data(this.child, 'block');
-
-		b.x = block.x;
-		b.y = block.y;
-
-		b.width = block.width;
-		b.height = block.height;
-
-		this.self();
-	};
 
 	/* Animation constructor */
 
-	var Animation = function(duration, transition, callback)
+	var Animation = function(id, duration, transition, callback)
 	{
+		this.id = id;
+
 		this.b = (this.a = time()) + (duration * 1000);
 
 		if(typeof(transition) != 'function')
@@ -590,6 +588,15 @@
 		if(!this.interval)
 		{
 			this.init();
+		}
+		for(var i = 0; i < this.stack.length; i++)
+		{
+			if(this.stack[i].id === animation.id)
+			{
+				this.stack.splice(i, 1);
+
+				break;
+			}
 		}
 		this.stack.push(animation);
 	};
