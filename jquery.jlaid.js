@@ -86,7 +86,7 @@
 	{
 		var o = this.options;
 
-		if(this.children.find(handle))
+		if($.inArray(handle, $.makeArray(this.children)) != -1)
 		{
 			if(typeof($.data(handle, 'options')) != 'object')
 			{
@@ -98,10 +98,7 @@
 		{
 			return;
 		}
-		for(var i in options)
-		{
-			o[i] = options[i];
-		}
+		Laid.args(o, options, true);
 	};
 	Laid.prototype.each = function(callback)
 	{
@@ -241,7 +238,7 @@
 			}
 			this.each(function(j, box)
 			{
-				if(this.x > next.x && line.y == next.y)
+				if(this.x + this.width > next.x && line.y == next.y)
 				{
 					return;
 				}
@@ -415,7 +412,9 @@
 				'line #' + (i + 1) + ' [' +
 				this.y + ' ' +
 				this.width + ']'
-			);
+			,
+			true);
+
 			this.each(function(j, box)
 			{
 				that.log
@@ -425,14 +424,15 @@
 					this.y + ' ' +
 					this.width + ' ' +
 					this.height + ']'
-				);
+				,
+				true);
 			});
 		});
-		that.log('built in ' + time + 'ms');
+		that.log('built in ' + time + 'ms', true);
 	};
-	Laid.prototype.log = function(message)
+	Laid.prototype.log = function(message, bypass)
 	{
-		if(this.option('debug'))
+		if(this.option('debug') || bypass)
 		{
 			console.log('jLaid: ' + message);
 		}
