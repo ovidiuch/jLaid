@@ -71,7 +71,10 @@
 		{
 			$(this).css('position', 'absolute');
 
-			that.items.push(new Block(this));
+			if(!that.find(this))
+			{
+				that.items.push(new Block(this));
+			}
 		});
 		$(window).resize(function()
 		{
@@ -187,7 +190,7 @@
 		{
 			return;
 		}
-		block.revert(); // still already thinks it's there
+		Laid.args(block.next, block.original, true);
 
 		this.refresh(false);
 	};
@@ -207,10 +210,7 @@
 
 			if($.inArray(block.next, this.stack) == -1)
 			{
-				this.append(block.next = this.next
-				(
-					block.width, block.height
-				));
+				this.append(this.next(block.next));
 			}
 			this.set(block, init);
 		};
@@ -222,9 +222,9 @@
 		}
 		this.reset();
 	};
-	Laid.prototype.next = function(width, height)
+	Laid.prototype.next = function(next)
 	{
-		var next = { width: width, height: height }, that = this;
+		var valid, that = this;
 
 		next.x = next.y = Laid.INFINITY;
 
@@ -234,7 +234,7 @@
 			{
 				return;
 			}
-			if(that.check(0, this.y, width, height))
+			if(that.check(0, this.y, next.width, next.height))
 			{
 				next.x = 0;
 				next.y = this.y;
@@ -245,7 +245,11 @@
 				{
 					return;
 				}
-				if(that.check(this.x + this.width, line.y, width, height))
+				valid = that.check
+				(
+					this.x + this.width, line.y, next.width, next.height
+				);
+				if(valid)
 				{
 					next.x = this.x + this.width;
 					next.y = line.y;
@@ -516,15 +520,15 @@
 			width: this.width,
 			height: this.height
 		};
-		this.next = {};
+		this.next =
+		{
+			width: this.width,
+			height: this.height
+		};
 	};
 	Block.prototype.update = function(box)
 	{
 		Laid.args(this, box, true);
-	};
-	Block.prototype.revert = function()
-	{
-		this.update(this.original);
 	};
 	Block.prototype.diff = function(box)
 	{
