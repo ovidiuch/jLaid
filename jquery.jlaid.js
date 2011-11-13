@@ -231,23 +231,23 @@
 			{
 				return;
 			}
-			sibling = line[0];
-
-			if(!sibling || sibling.x > 0)
+			if(!this.width || that.check(0, this.y, next.width, next.height))
 			{
-				if(that.check(0, this.y, next.width, next.height))
-				{
-					next.x = 0;
-					next.y = this.y;
-				}
+				next.x = 0;
+				next.y = this.y;
 			}
 			this.each(function(j, box)
 			{
-				sibling = line[j + 1];
-
-				if(sibling && sibling.x == this.x + this.width)
+				while((sibling = line[++j]))
 				{
-					return;
+					if(sibling.x > this.x + this.width)
+					{
+						break;
+					}
+					if(sibling.y == this.y)
+					{
+						return;
+					}
 				}
 				if(this.x + this.width > next.x && line.y == next.y)
 				{
