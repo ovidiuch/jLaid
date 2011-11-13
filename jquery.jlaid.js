@@ -221,7 +221,7 @@
 	};
 	Laid.prototype.next = function(next)
 	{
-		var valid, that = this;
+		var sibling, valid, that = this;
 
 		next.x = next.y = Laid.INFINITY;
 
@@ -231,13 +231,24 @@
 			{
 				return;
 			}
-			if(that.check(0, this.y, next.width, next.height))
+			sibling = line[0];
+
+			if(!sibling || sibling.x > 0)
 			{
-				next.x = 0;
-				next.y = this.y;
+				if(that.check(0, this.y, next.width, next.height))
+				{
+					next.x = 0;
+					next.y = this.y;
+				}
 			}
 			this.each(function(j, box)
 			{
+				sibling = line[j + 1];
+
+				if(sibling && sibling.x == this.x + this.width)
+				{
+					return;
+				}
 				if(this.x + this.width > next.x && line.y == next.y)
 				{
 					return;
@@ -291,23 +302,36 @@
 	};
 	Laid.prototype.append = function(box)
 	{
-		var index = 0, that = this;
+		var indices = [], that = this;
 
 		this.stack.push(box);
 
-		this.line(box.y);
-		this.line(box.y + box.height);
+		indices.push(this.line(box.y));
+		indices.push(this.line(box.y + box.height));
 
-		for(var k = 0; k < this.stack.length; k++)
+		for(var i = 0, j, line; i < indices.length; i++)
 		{
-			this.each(function(i, line)
+			if(indices[i] == -1)
 			{
-				if(that.inline(that.stack[k], i))
+				continue;
+			}
+			line = this.lines[indices[i]];
+
+			for(j = 0; j < this.stack.length; j++)
+			{
+				if(this.inline(that.stack[j], indices[i]))
 				{
-					this.box(that.stack[k]);
+					line.box(that.stack[j]);
 				}
-			});
+			}
 		}
+		this.each(function(i, line)
+		{
+			if(that.inline(box, i))
+			{
+				this.box(box);
+			}
+		});
 	};
 	Laid.prototype.inline = function(box, i)
 	{
@@ -353,6 +377,7 @@
 		{
 			this.lines.splice(index, 0, new Line(y));
 		}
+		return index;
 	};
 	Laid.prototype.set = function(block, init)
 	{
