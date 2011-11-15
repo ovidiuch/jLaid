@@ -61,26 +61,26 @@
 
 	Laid.prototype.items = [];
 
-	Laid.prototype.init = function()
+	Laid.prototype.init = function(insert)
 	{
 		var that = this;
 
 		$(this.wrapper).css('position', 'relative');
 
-		this.children.each(function()
+		(this.children = $(this.wrapper).find('> li')).each(function(i)
 		{
 			$(this).css('position', 'absolute');
 
 			if(!that.find(this))
 			{
-				that.items.push(new Block(this, that));
+				that.items.splice(i, 0, new Block(this, insert));
 			}
 		});
 		$(window).resize(function()
 		{
 			that.presize();
 		});
-		this.refresh(true);
+		this.refresh(!insert);
 	};
 	Laid.prototype.update = function(options, handle)
 	{
@@ -191,6 +191,23 @@
 
 		this.refresh(false);
 	};
+	Laid.prototype.insert = function(brother, child)
+	{
+		var block = this.find(child);
+
+		if(!block)
+		{
+			return;
+		}
+		$(brother).css(
+		{
+			left: block.x + block.width,
+			top: block.y
+		});
+		$(child).after(brother);
+
+		this.init(true);
+	};
 	Laid.prototype.refresh = function(init)
 	{
 		var t = time();
@@ -209,7 +226,7 @@
 			{
 				this.append(this.next(block.next));
 			}
-			block.set(init);
+			this.set(block, init);
 		};
 		$(this.wrapper).height(this.lines[this.lines.length - 1].y);
 
@@ -379,6 +396,53 @@
 		}
 		return index;
 	};
+	Laid.prototype.set = function(block, init)
+	{
+		var diff = block.diff(block.next), that = this;
+
+		if(!diff && !init)
+		{
+			return;
+		}
+		block.update(block.next);
+
+		var transition = this.option('transition', block.child);
+
+		if(!transition || init)
+		{
+			this.assign
+			(
+				block.child,
+				block.x,
+				block.y,
+				block.width - block.h,
+				block.height - block.v
+			);
+			return;
+		}
+		var duration = this.option('duration', block.child);
+
+		new Animation(block, duration, transition, function(ratio)
+		{
+			ratio = 1 - ratio;
+
+			that.assign
+			(
+				block.child,
+				block.x - (diff.x * ratio),
+				block.y - (diff.y * ratio),
+				block.width - (diff.width * ratio) - block.h,
+				block.height - (diff.height * ratio) - block.v
+			);
+		});
+	};
+	Laid.prototype.assign = function(child, x, y, width, height)
+	{
+		$(child).css(
+		{
+			left: x, top: y, width: width, height: height
+		});
+	};
 	Laid.prototype.print = function(time)
 	{
 		var that = this;
@@ -470,20 +534,17 @@
 
 	/* Block constructor */
 
-	var Block = function(child, laid)
+	var Block = function(child, insert)
 	{
-		if(!(this.child = child))
+		if((this.child = child))
 		{
-			return;
+			this.init(insert);
 		}
-		this.laid = laid;
-
-		this.init();
 	};
 
 	/* Block prototype */
 
-	Block.prototype.init = function()
+	Block.prototype.init = function(insert)
 	{
 		var c = $(this.child), position = c.position();
 
@@ -506,10 +567,10 @@
 			width: this.width,
 			height: this.height
 		};
-	};
-	Block.prototype.option = function(name)
-	{
-		return this.laid.option(name, this.child);
+		if(insert)
+		{
+			this.width = this.height = 0;
+		}
 	};
 	Block.prototype.update = function(box)
 	{
@@ -533,51 +594,6 @@
 			return false;
 		}
 		return diff;
-	};
-	Block.prototype.set = function(init)
-	{
-		var diff = this.diff(this.next), that = this;
-
-		if(!diff && !init)
-		{
-			return;
-		}
-		this.update(this.next);
-
-		var transition = this.option('transition');
-
-		if(!transition || init)
-		{
-			this.assign
-			(
-				this.x,
-				this.y,
-				this.width - this.h,
-				this.height - this.v
-			);
-			return;
-		}
-		var duration = this.option('duration');
-
-		new Animation(this, duration, transition, function(ratio)
-		{
-			ratio = 1 - ratio;
-
-			that.assign
-			(
-				that.x - (diff.x * ratio),
-				that.y - (diff.y * ratio),
-				that.width - (diff.width * ratio) - that.h,
-				that.height - (diff.height * ratio) - that.v
-			);
-		});
-	};
-	Block.prototype.assign = function(x, y, width, height)
-	{
-		$(this.child).css(
-		{
-			left: x, top: y, width: width, height: height
-		});
 	};
 
 	/* Animation constructor */
