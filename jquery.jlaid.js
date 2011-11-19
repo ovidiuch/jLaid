@@ -4,22 +4,10 @@
 
 	var Laid = function(wrapper, options)
 	{
-		if(!(this.children = $(wrapper).find('> li')).length)
-		{
-			return;
-		}
-		var that = this;
-
-		$(this.children).each(function()
-		{
-			$.data(this, 'laid', that);
-		});
 		$.data(wrapper, 'laid', this);
 
-		options = Laid.args(options, Laid.defaults);
-
 		this.wrapper = wrapper;
-		this.options = options;
+		this.options = Laid.args(options, Laid.defaults);
 
 		if(!this.option('wait'))
 		{
@@ -67,13 +55,15 @@
 
 		$(this.wrapper).css('position', 'relative');
 
-		this.children.each(function()
+		(this.children = $(this.wrapper).find('> li')).each(function(i)
 		{
+			$.data(this, 'laid', that);
+
 			$(this).css('position', 'absolute');
 
 			if(!that.find(this))
 			{
-				that.items.push(new Block(this, that));
+				that.items.splice(i, 0, new Block(this, that));
 			}
 		});
 		$(window).resize(function()
@@ -190,6 +180,18 @@
 		Laid.args(block.next, block.original, true);
 
 		this.refresh(false);
+	};
+	Laid.prototype.insert = function(baby, child)
+	{
+		var block = this.find(child);
+
+		if(!block)
+		{
+			return;
+		}
+		$(child).after(baby);
+
+		this.init();
 	};
 	Laid.prototype.refresh = function(init)
 	{
