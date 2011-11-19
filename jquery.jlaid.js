@@ -81,7 +81,7 @@
 	{
 		var o = this.options;
 
-		if($.inArray(handle, $.makeArray(this.children)) != -1)
+		if($.inArray(handle, $.makeArray(this.children)) != -1) // maybe wrapper.find() ?
 		{
 			if(typeof($.data(handle, 'options')) != 'object')
 			{
@@ -190,12 +190,14 @@
 	{
 		var block = this.find(child);
 
-		if(!block)
+		if(block)
 		{
-			return;
+			$(child).after(baby);
 		}
-		$(child).after(baby);
-
+		else if(child == this.wrapper)
+		{
+			$(this.wrapper).prepend(baby);
+		}
 		this.init(baby);
 	};
 	Laid.prototype.refresh = function(init)
@@ -550,7 +552,8 @@
 			this.x = this.next.x;
 			this.y = this.next.y;
 
-			this.width = this.height = 0;
+			this.width = this.h;
+			this.height = this.v;
 		}
 	};
 	Block.prototype.set = function(init)
