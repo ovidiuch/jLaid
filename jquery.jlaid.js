@@ -49,9 +49,9 @@
 
 	Laid.prototype.items = [];
 
-	Laid.prototype.init = function()
+	Laid.prototype.init = function(child)
 	{
-		var that = this;
+		var that = this, block;
 
 		$(this.wrapper).css('position', 'relative');
 
@@ -63,14 +63,19 @@
 
 			if(!that.find(this))
 			{
-				that.items.splice(i, 0, new Block(this, that));
+				that.items.splice(i, 0, block = new Block(this, that));
+
+				if(this == child)
+				{
+					block.insert = true;
+				}
 			}
 		});
 		$(window).resize(function()
 		{
 			that.presize();
 		});
-		this.refresh(true);
+		this.refresh(!Boolean(child));
 	};
 	Laid.prototype.update = function(options, handle)
 	{
@@ -191,7 +196,7 @@
 		}
 		$(child).after(baby);
 
-		this.init();
+		this.init(baby);
 	};
 	Laid.prototype.refresh = function(init)
 	{
@@ -536,8 +541,22 @@
 		}
 		return diff;
 	};
+	Block.prototype.preset = function()
+	{
+		if(this.insert)
+		{
+			this.insert = false;
+
+			this.x = this.next.x;
+			this.y = this.next.y;
+
+			this.width = this.height = 0;
+		}
+	};
 	Block.prototype.set = function(init)
 	{
+		this.preset();
+
 		var diff = this.diff(this.next), that = this;
 
 		if(!diff && !init)
@@ -635,6 +654,8 @@
 			}
 		}
 		this.stack.push(animation);
+
+		animation.frame(time());
 	};
 	Animation.frame = function(x, t)
 	{
