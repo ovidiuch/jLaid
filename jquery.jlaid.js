@@ -61,7 +61,7 @@
 
 			$(this).css('position', 'absolute');
 
-			if(!that.find(this))
+			if(!(block = that.find(this)))
 			{
 				that.items.splice(i, 0, block = new Block(this, that));
 
@@ -69,6 +69,12 @@
 				{
 					block.insert = true;
 				}
+			}
+			else if(child && this == child)
+			{
+				block.remove();
+
+				that.items.splice(i, 1);
 			}
 		});
 		$(window).resize(function()
@@ -199,6 +205,16 @@
 			$(this.wrapper).prepend(baby);
 		}
 		this.init(baby);
+	};
+	Laid.prototype.remove = function(nothing, child)
+	{
+		var block = this.find(child);
+
+		if(!block)
+		{
+			return;
+		}
+		this.init(child);
 	};
 	Laid.prototype.refresh = function(init)
 	{
@@ -596,12 +612,37 @@
 			);
 		});
 	};
+	Block.prototype.remove = function()
+	{
+		this.next.width = this.h;
+		this.next.height = this.v;
+
+		this.set();
+
+		if(!this.option('transition'))
+		{
+			this.destroy();
+
+			return;
+		}
+		var that = this;
+
+		window.setTimeout(function()
+		{
+			that.destroy();
+		},
+		this.option('duration') * 1000);
+	};
 	Block.prototype.assign = function(x, y, width, height)
 	{
 		$(this.child).css(
 		{
 			left: x, top: y, width: width, height: height
 		});
+	};
+	Block.prototype.destroy = function()
+	{
+		$(this.child).remove();
 	};
 
 	/* Animation constructor */
