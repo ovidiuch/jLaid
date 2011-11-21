@@ -99,24 +99,19 @@
 		};
 		return this.options[name];
 	};
-	Laid.prototype.index = function(child)
+	Laid.prototype.index = function()
 	{
 		var that = this;
 
 		this.children().each(function(i)
 		{
-			if((block = that.find(this)))
+			if(that.find(this))
 			{
 				return;
 			}
-			block = new Block(this, that);
-
-			that.items.splice(i, 0, block);
+			that.items.splice(i, 0, new Block(this, that));
 		});
-		if(!child)
-		{
-			this.refresh(true);
-		}
+		this.refresh(true);
 	};
 	Laid.prototype.find = function(child)
 	{
@@ -147,17 +142,28 @@
 	};
 	Laid.prototype.presize = function()
 	{
-		if(this.timeout)
+		if(this.resize)
 		{
-			window.clearTimeout(this.timeout);
+			window.clearTimeout(this.resize);
 		}
 		var that = this;
 
-		this.timeout = window.setTimeout(function()
+		this.resize = window.setTimeout(function()
 		{
 			that.refresh(that.timeout = null);
 		},
 		this.option('delay'));
+	};
+	Laid.prototype.queue = function(callback)
+	{
+		if(this.queued)
+		{
+			window.clearTimeout(this.queued);
+		}
+		this.queued = window.setTimeout(function()
+		{
+			callback();
+		});
 	};
 	Laid.prototype.focus = function(args, child)
 	{
@@ -198,29 +204,38 @@
 	};
 	Laid.prototype.insert = function(baby, child)
 	{
-		var block = this.find(child), index = 0;
-
-		if(block)
-		{
-			$(child).after(baby);
-
-			index = $.inArray(block, this.items);
-		}
-		else if(child == this.wrapper)
-		{
-			$(this.wrapper).prepend(baby);
-		}
-		this.init(baby, index);
+		//var block = this.find(child), index = 0;
+		//
+		//if(block)
+		//{
+		//	$(child).after(baby);
+		//
+		//	index = $.inArray(block, this.items);
+		//}
+		//else if(child == this.wrapper)
+		//{
+		//	$(this.wrapper).prepend(baby);
+		//}
+		//this.init(baby, index);
 	};
 	Laid.prototype.remove = function(nothing, child)
 	{
-		var block = this.find(child);
+		var block = this.find(child), that = this;
 
 		if(!block)
 		{
 			return;
 		}
-		this.init(child);
+		this.items.splice
+		(
+			$.inArray(block, this.items), 1
+		);
+		block.remove();
+
+		this.queue(function()
+		{
+			that.refresh();
+		});
 	};
 	Laid.prototype.refresh = function(init)
 	{
@@ -770,7 +785,10 @@
 			}
 			if(method)
 			{
-				return $.data(this, 'laid')[method](args, this);
+				return $.data(this, 'laid')[method]
+				(
+					args, this
+				);
 			}
 			return false;
 		});
