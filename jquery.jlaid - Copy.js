@@ -70,34 +70,46 @@
 			that.presize();
 		});
 		this.index();
-	};
-	Laid.prototype.update = function(options, handle)
-	{
-		var o = this.options;
 
-		if(handle)
-		{
-			if(typeof($.data(handle, 'options')) != 'object')
-			{
-				$.data(handle, 'options', {});
-			}
-			o = $.data(handle, 'options');
-		}
-		else if(handle && handle != this.wrapper)
-		{
-			return;
-		}
-		Laid.args(o, options, true);
-	};
-	Laid.prototype.option = function(name, handle)
-	{
-		var options = $.data(handle || {}, 'options') || {};
-
-		if(options[name] !== undefined)
-		{
-			return options[name];
-		};
-		return this.options[name];
+		//var that = this, block;
+		//
+		//$(this.wrapper).css('position', 'relative');
+		//
+		//(this.children = $(this.wrapper).find('> li')).each(function(i)
+		//{
+		//	$.data(this, 'laid', that);
+		//
+		//	$(this).css('position', 'absolute');
+		//
+		//	if(!(block = that.find(this))/* && index*/) // temporary
+		//	{
+		//		block = new Block(this, that)
+		//
+		//		that.items.splice(i, 0, block); // index if povided
+		//
+		//		if(this == child)
+		//		{
+		//			block.insert = true;
+		//		}
+		//	}
+		//	else if(this == child)
+		//	{
+		//		that.items.splice
+		//		(
+		//			$.inArray(block, that.items), 1
+		//		);
+		//		block.remove();
+		//	}
+		//});
+		//if(child) // ok?
+		//{
+		//	return;
+		//}
+		//$(window).resize(function()
+		//{
+		//	that.presize();
+		//});
+		//this.refresh(true);
 	};
 	Laid.prototype.index = function(child)
 	{
@@ -118,21 +130,23 @@
 			this.refresh(true);
 		}
 	};
-	Laid.prototype.find = function(child)
+	Laid.prototype.update = function(options, handle)
 	{
-		for(var i in this.items)
+		var o = this.options;
+
+		if($.inArray(handle, $.makeArray(this.children)) != -1)
 		{
-			if(this.items[i].child == child)
+			if(typeof($.data(handle, 'options')) != 'object')
 			{
-				return this.items[i];
+				$.data(handle, 'options', {});
 			}
+			o = $.data(handle, 'options');
 		}
-		return false;
-	};
-	Laid.prototype.reset = function()
-	{
-		this.lines = [ new Line() ];
-		this.stack = [];
+		else if(handle && handle != this.wrapper)
+		{
+			return;
+		}
+		Laid.args(o, options, true);
 	};
 	Laid.prototype.each = function(callback)
 	{
@@ -144,6 +158,35 @@
 			}
 		}
 		return true;
+	};
+	Laid.prototype.option = function(name, child)
+	{
+		if(child)
+		{
+			var options = $.data(child, 'options') || {};
+
+			if(options[name] !== undefined)
+			{
+				return options[name]
+			};
+		}
+		return this.options[name];
+	};
+	Laid.prototype.reset = function()
+	{
+		this.lines = [ new Line() ];
+		this.stack = [];
+	};
+	Laid.prototype.find = function(child)
+	{
+		for(var i in this.items)
+		{
+			if(this.items[i].child == child)
+			{
+				return this.items[i];
+			}
+		}
+		return false;
 	};
 	Laid.prototype.presize = function()
 	{
