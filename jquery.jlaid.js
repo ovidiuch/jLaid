@@ -9,7 +9,7 @@
 		this.wrapper = wrapper;
 		this.options = Laid.args(options, Laid.defaults);
 
-		if(!this.option('wait'))
+		if(!this.option('wait')) // not good
 		{
 			this.init();
 		}
@@ -59,12 +59,6 @@
 		};
 		$(this.wrapper).css('position', 'relative');
 
-		this.children().each(function()
-		{
-			$.data(this, 'laid', that);
-
-			$(this).css('position', 'absolute');
-		});
 		$(window).resize(function()
 		{
 			that.presize();
@@ -202,21 +196,30 @@
 
 		this.refresh(false);
 	};
-	Laid.prototype.insert = function(baby, child)
+	Laid.prototype.insert = function(child, after)
 	{
-		//var block = this.find(child), index = 0;
-		//
-		//if(block)
-		//{
-		//	$(child).after(baby);
-		//
-		//	index = $.inArray(block, this.items);
-		//}
-		//else if(child == this.wrapper)
-		//{
-		//	$(this.wrapper).prepend(baby);
-		//}
-		//this.init(baby, index);
+		if(typeof(child) == 'function')
+		{
+			child = child();
+		}
+		var block = this.find(after), that = this;
+
+		$(this.wrapper).prepend(child);
+
+		if(block)
+		{
+			$(after).after(child);
+		}
+		this.items.splice($.inArray(block, this.items) + 1, 0,
+		(
+			block = new Block(child, this)
+		));
+		block.insert = true;
+
+		this.queue(function()
+		{
+			that.refresh();
+		});
 	};
 	Laid.prototype.remove = function(nothing, child)
 	{
@@ -522,7 +525,7 @@
 		{
 			return;
 		}
-		this.laid = laid;
+		$.data(child, 'laid', (this.laid = laid));
 
 		this.init();
 	};
@@ -531,7 +534,11 @@
 
 	Block.prototype.init = function()
 	{
-		var c = $(this.child), position = c.position();
+		var c = $(this.child).css(
+		{
+			position: 'absolute', visibility: 'hidden'
+		});
+		var position = c.position();
 
 		this.x = position.left;
 		this.y = position.top;
@@ -542,16 +549,11 @@
 		this.h = this.width - c.width();
 		this.v = this.height - c.height();
 
-		this.original =
+		this.next = $.extend({}, this.original =
 		{
 			width: this.width,
 			height: this.height
-		};
-		this.next =
-		{
-			width: this.width,
-			height: this.height
-		};
+		});
 	};
 	Block.prototype.option = function(name)
 	{
@@ -582,16 +584,15 @@
 	};
 	Block.prototype.preset = function()
 	{
-		if(this.insert)
+		if(this.insert && !(this.insert = false))
 		{
-			this.insert = false;
-
 			this.x = this.next.x;
 			this.y = this.next.y;
 
 			this.width = this.h;
 			this.height = this.v;
 		}
+		$(this.child).css('visibility', 'visible');
 	};
 	Block.prototype.set = function(init)
 	{
