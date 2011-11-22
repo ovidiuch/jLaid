@@ -588,8 +588,8 @@
 			this.x = this.next.x;
 			this.y = this.next.y;
 
-			this.width = this.h;
-			this.height = this.v;
+			this.width = 0;
+			this.height = 0;
 		}
 		$(this.child).css('visibility', 'visible');
 	};
@@ -635,9 +635,7 @@
 	};
 	Block.prototype.remove = function()
 	{
-		//this.next.width = this.h;
 		this.next.width = 0;
-		//this.next.height = this.v;
 		this.next.height = 0;
 
 		this.set();
@@ -658,6 +656,9 @@
 	};
 	Block.prototype.assign = function(x, y, width, height)
 	{
+		width = Math.max(width, 0);
+		height = Math.max(height, 0);
+
 		$(this.child).css(
 		{
 			left: x, top: y, width: width, height: height
