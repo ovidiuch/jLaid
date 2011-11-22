@@ -161,7 +161,7 @@
 	};
 	Laid.prototype.focus = function(args, child)
 	{
-		var block = this.find(child);
+		var block = this.find(child), that = this;
 
 		if(!block)
 		{
@@ -169,24 +169,20 @@
 		}
 		var next = Laid.args(block.next, args, true);
 
-		var diff = block.diff(block.next);
-
-		if(diff && next.center)
-		{
-			next.x -= diff.width / 2;
-			next.y -= diff.height / 2;
-		}
 		next.x = Math.min(next.x, this.width - next.width);
 		next.x = Math.max(next.x, 0);
 		next.y = Math.max(next.y, 0);
 
 		this.append(next);
 
-		this.refresh(false);
+		this.queue(function()
+		{
+			that.refresh();
+		});
 	};
 	Laid.prototype.blur = function(args, child)
 	{
-		var block = this.find(child);
+		var block = this.find(child), that = this;
 
 		if(!block)
 		{
@@ -194,7 +190,10 @@
 		}
 		Laid.args(block.next, block.original, true);
 
-		this.refresh(false);
+		this.queue(function()
+		{
+			that.refresh();
+		});
 	};
 	Laid.prototype.insert = function(child, after)
 	{
