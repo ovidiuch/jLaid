@@ -687,11 +687,10 @@
 		{
 			this.transition = transition;
 		}
-		if(typeof(callback) == 'function')
+		if(typeof(this.callback = callback) == 'function')
 		{
-			this.callback = callback;
+			Animation.push(this);
 		}
-		Animation.push(this);
 	};
 
 	/* Animation static */
@@ -760,10 +759,8 @@
 		{
 			ratio = this.transition(ratio);
 		}
-		if(this.callback)
-		{
-			this.callback(ratio);
-		}
+		this.callback(ratio);
+
 		return ratio < 1;
 	};
 
