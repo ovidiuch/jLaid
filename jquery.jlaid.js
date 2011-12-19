@@ -683,14 +683,14 @@
 
 		this.b = (this.a = time()) + (duration * 1000);
 
-		if(typeof(transition) != 'function')
+		if(typeof(transition) == 'function')
 		{
-			transition = Animation.linear;
+			this.transition = transition;
 		}
-		this.transition = transition;
-
-		this.callback = callback || function(){};
-
+		if(typeof(callback) == 'function')
+		{
+			this.callback = callback;
+		}
 		Animation.push(this);
 	};
 
@@ -749,21 +749,21 @@
 			}
 		}
 	};
-	Animation.linear = function(current, total)
-	{
-		return current / total;
-	};
 
 	/* Animation prototype */
 
 	Animation.prototype.frame = function(time)
 	{
-		var ratio = Math.min(1, this.transition
-		(
-			time - this.a, this.b - this.a
-		));
-		this.callback(ratio);
+		var ratio = Math.min(1, (time - this.a) / (this.b - this.a));
 
+		if(this.transition)
+		{
+			ratio = this.transition(ratio);
+		}
+		if(this.callback)
+		{
+			this.callback(ratio);
+		}
 		return ratio < 1;
 	};
 

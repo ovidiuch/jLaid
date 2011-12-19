@@ -44,21 +44,17 @@ html, body {
 
 transitions = {};
 
-transitions.linear = function(current, total)
+transitions.easeInQuint = function(ratio)
 {
-	return current / total;
+	return (ratio /= 1) * ratio * ratio * ratio * ratio;
 };
-transitions.easeInQuint = function(current, total)
+transitions.easeInExpo = function(ratio)
 {
-	return (current /= total) * current * current * current * current;
+	return (ratio == 0) ? 0 : Math.pow(2, 10 * (ratio / 1 - 1)) - 1 * 0.001;
 };
-transitions.easeInExpo = function(current, total)
+transitions.easeInBack = function(ratio)
 {
-	return (current == 0) ? 0 : Math.pow(2, 10 * (current / total - 1)) - 1 * 0.001;
-};
-transitions.easeInBack = function(current, total, overshoot)
-{
-	return (current /= total) * current * ((2 + 1) * current - 2);
+	return (ratio /= 1) * ratio * ((2 + 1) * ratio - 2);
 };
 
 $(function()
@@ -100,7 +96,7 @@ $(function()
 	window.laid = $('.grid').laid(
 	{
 		//duration: 5,
-		//transition: false,
+		//transition: transitions.easeInBack,
 		//debug: true
 		//wait: true
 	})
