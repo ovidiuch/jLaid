@@ -9,10 +9,7 @@
 		this.wrapper = wrapper;
 		this.options = Laid.args(options, Laid.defaults);
 
-		if(!this.option('wait')) // not good
-		{
-			this.init();
-		}
+		this.init();
 	};
 
 	/* Laid static */
@@ -105,7 +102,10 @@
 			}
 			that.items.splice(i, 0, new Block(this, that));
 		});
-		this.refresh(true);
+		if(!this.option('wait'))
+		{
+			this.render();
+		}
 	};
 	Laid.prototype.find = function(child)
 	{
@@ -136,15 +136,21 @@
 	};
 	Laid.prototype.presize = function()
 	{
-		if(this.resize)
+		if(!this.lines)
 		{
-			window.clearTimeout(this.resize);
+			return;
+		}
+		if(this.resizing)
+		{
+			window.clearTimeout(this.resizing);
 		}
 		var that = this;
 
-		this.resize = window.setTimeout(function()
+		this.resizing = window.setTimeout(function()
 		{
-			that.refresh(that.timeout = null);
+			that.timeout = null;
+
+			that.render();
 		},
 		this.option('delay'));
 	};
@@ -177,7 +183,7 @@
 
 		this.queue(function()
 		{
-			that.refresh();
+			that.render();
 		});
 	};
 	Laid.prototype.blur = function(args, child)
@@ -192,7 +198,7 @@
 
 		this.queue(function()
 		{
-			that.refresh();
+			that.render();
 		});
 	};
 	Laid.prototype.insert = function(child, after)
@@ -217,7 +223,7 @@
 
 		this.queue(function()
 		{
-			that.refresh();
+			that.render();
 		});
 	};
 	Laid.prototype.remove = function(nothing, child)
@@ -236,12 +242,12 @@
 
 		this.queue(function()
 		{
-			that.refresh();
+			that.render();
 		});
 	};
-	Laid.prototype.refresh = function(init)
+	Laid.prototype.render = function()
 	{
-		var t = time();
+		var t = time(), init = !Boolean(this.lines);
 
 		if(init)
 		{
