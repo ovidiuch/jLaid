@@ -136,19 +136,15 @@
 	};
 	Laid.prototype.presize = function()
 	{
-		if(!this.lines)
+		if(!this.lines || this.resizing)
 		{
 			return;
-		}
-		if(this.resizing)
-		{
-			window.clearTimeout(this.resizing);
 		}
 		var that = this;
 
 		this.resizing = window.setTimeout(function()
 		{
-			that.timeout = null;
+			that.resizing = null;
 
 			that.render();
 		},
