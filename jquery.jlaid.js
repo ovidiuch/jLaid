@@ -161,7 +161,7 @@
 			callback();
 		});
 	};
-	Laid.prototype.focus = function(args, child)
+	Laid.prototype.focus = function(child, args)
 	{
 		var block = this.find(child), that = this;
 
@@ -182,7 +182,7 @@
 			that.render();
 		});
 	};
-	Laid.prototype.blur = function(args, child)
+	Laid.prototype.blur = function(child, args)
 	{
 		var block = this.find(child), that = this;
 
@@ -197,23 +197,23 @@
 			that.render();
 		});
 	};
-	Laid.prototype.insert = function(child, after)
+	Laid.prototype.insert = function(child, baby)
 	{
-		if(typeof(child) == 'function')
+		if(typeof(baby) == 'function')
 		{
-			child = child();
+			baby = baby();
 		}
-		var block = this.find(after), that = this;
+		var block = this.find(child), that = this;
 
-		$(this.wrapper).prepend(child);
+		$(this.wrapper).prepend(baby);
 
 		if(block)
 		{
-			$(after).after(child);
+			$(child).after(baby);
 		}
 		this.items.splice($.inArray(block, this.items) + 1, 0,
 		(
-			block = new Block(child, this)
+			block = new Block(baby, this)
 		));
 		block.insert = true;
 
@@ -222,7 +222,7 @@
 			that.render();
 		});
 	};
-	Laid.prototype.remove = function(nothing, child)
+	Laid.prototype.remove = function(child)
 	{
 		var block = this.find(child), that = this;
 
@@ -769,25 +769,25 @@
 
 	/* plugin */
 
-	$.fn.laid = function(method, args)
+	$.fn.laid = function()
 	{
-		if(typeof(method) != 'string')
-		{
-			args = method;
-		}
-		args = args || {};
+		var method, args = $.extend([], arguments);
 
+		if(typeof(args[0]) == 'string')
+		{
+			method = args.shift();
+		}
 		this.each(function()
 		{
 			if(!$.data(this, 'laid'))
 			{
-				return new Laid(this, $.extend({}, args));
+				return new Laid(this, $.extend({}, args[0]));
 			}
 			if(method)
 			{
-				return $.data(this, 'laid')[method]
+				return Laid.prototype[method].apply
 				(
-					args, this
+					$.data(this, 'laid'), [this].concat(args)
 				);
 			}
 			return false;
