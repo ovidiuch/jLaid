@@ -693,6 +693,42 @@
 		return new Date().getTime();
 	};
 
+	/* API */
+
+	var API = {};
+
+	API.reset = function(child)
+	{
+		var block = this.find(child);
+
+		if(!block)
+		{
+			return;
+		}
+		Laid.args(block.next, block.original, true);
+
+		this.queue();
+	};
+	API.set = function(child, args)
+	{
+		var block = this.find(child);
+
+		if(!block)
+		{
+			return;
+		}
+		Laid.args(block.next, args, true);
+
+		this.queue();
+	};
+	API.hide = function(child)
+	{
+		API.set.call(this, child,
+		{
+			width: 0, height: 0
+		});
+	};
+
 	/* plugin */
 
 	$.fn.laid = function()
@@ -711,7 +747,7 @@
 			}
 			if(method)
 			{
-				return Laid.prototype[method].apply
+				return API[method].apply
 				(
 					$.data(this, 'laid'), [this].concat(args)
 				);
