@@ -696,7 +696,7 @@
 
 	/* API */
 
-	var API = {};
+	var API = Laid.fn = {};
 
 	API.reset = function(child)
 	{
@@ -710,7 +710,7 @@
 
 		this.queue();
 	};
-	API.set = function(child, args)
+	API.set = function(child, args, lock)
 	{
 		var block = this.find(child);
 
@@ -720,6 +720,10 @@
 		}
 		Laid.args(block.next, args, true);
 
+		if(lock)
+		{
+			this.append(block.next);
+		}
 		this.queue();
 	};
 	API.hide = function(child)
@@ -727,7 +731,8 @@
 		API.set.call(this, child,
 		{
 			width: 0, height: 0
-		});
+		},
+		true);
 	};
 
 	/* plugin */
@@ -757,5 +762,6 @@
 		});
 		return this;
 	};
+	$.laid = Laid;
 })
 (jQuery, window, document);
