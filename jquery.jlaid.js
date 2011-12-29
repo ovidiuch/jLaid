@@ -591,6 +591,7 @@
 		{
 			left: x, top: y, width: width, height: height
 		});
+		$(this.child).css('display', width || height ? 'block' : 'none');
 	};
 	Block.prototype.destroy = function()
 	{
