@@ -150,94 +150,20 @@
 		},
 		this.option('delay'));
 	};
-	Laid.prototype.queue = function(callback)
+	Laid.prototype.queue = function()
 	{
 		if(this.queued)
 		{
 			window.clearTimeout(this.queued);
+
+			this.queued = null;
 		}
+		var that = this;
+
 		this.queued = window.setTimeout(function()
 		{
-			callback();
-		});
-	};
-	Laid.prototype.focus = function(child, args)
-	{
-		var block = this.find(child), that = this;
+			that.queued = null;
 
-		if(!block)
-		{
-			return;
-		}
-		var next = Laid.args(block.next, args, true);
-
-		next.x = Math.min(next.x, this.width - next.width);
-		next.x = Math.max(next.x, 0);
-		next.y = Math.max(next.y, 0);
-
-		this.append(next);
-
-		this.queue(function()
-		{
-			that.render();
-		});
-	};
-	Laid.prototype.blur = function(child, args)
-	{
-		var block = this.find(child), that = this;
-
-		if(!block)
-		{
-			return;
-		}
-		Laid.args(block.next, block.original, true);
-
-		this.queue(function()
-		{
-			that.render();
-		});
-	};
-	Laid.prototype.insert = function(child, baby)
-	{
-		if(typeof(baby) == 'function')
-		{
-			baby = baby();
-		}
-		var block = this.find(child), that = this;
-
-		$(this.wrapper).prepend(baby);
-
-		if(block)
-		{
-			$(child).after(baby);
-		}
-		this.items.splice($.inArray(block, this.items) + 1, 0,
-		(
-			block = new Block(baby, this)
-		));
-		block.insert = true;
-
-		this.queue(function()
-		{
-			that.render();
-		});
-	};
-	Laid.prototype.remove = function(child)
-	{
-		var block = this.find(child), that = this;
-
-		if(!block)
-		{
-			return;
-		}
-		this.items.splice
-		(
-			$.inArray(block, this.items), 1
-		);
-		block.remove();
-
-		this.queue(function()
-		{
 			that.render();
 		});
 	};
