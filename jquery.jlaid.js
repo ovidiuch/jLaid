@@ -65,7 +65,7 @@
 	{
 		var o = this.options;
 
-		if(handle)
+		if(handle && this.find(handle))
 		{
 			if(typeof($.data(handle, 'options')) != 'object')
 			{
@@ -750,15 +750,13 @@
 		}
 		this.each(function()
 		{
-			laid = $.data(this, 'laid');
-
-			if(!laid)
+			if(!(laid = $.data(this, 'laid')))
 			{
 				method || new Laid(this, args[0]);
 			}
 			else if(!method)
 			{
-				laid.update(args[0]);
+				laid.update(args[0], this);
 			}
 			else API[method].apply
 			(
