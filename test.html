@@ -90,16 +90,15 @@ $(function()
 			var w = sizes[boxes[i][0]]/* - 20*/;
 			var h = sizes[boxes[i][1]]/* - 16*/;
 
-			$('.grid').append('<li class="child-' + i + '" style="width: ' + w + 'px; height: ' + h + 'px;"><div class="inner"><p>' + (Number(i) + 1) + '</p></div></li>');
+			$('ul').append('<li class="child-' + i + '" style="width: ' + w + 'px; height: ' + h + 'px;"><div class="inner"><p>' + (Number(i) + 1) + '</p></div></li>');
 		}
 	}
-	window.laid = $('.grid').laid(
+	$('ul').laid(
 	{
-		delay: 1000,
+		//delay: 1000,
 		//duration: 5,
 		//transition: transitions.easeInBack,
 		//debug: true
-		//wait: true
 	})
 	//.laid('#grid-2',
 	//{
