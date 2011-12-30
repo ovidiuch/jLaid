@@ -754,7 +754,6 @@
 			{
 				method || new Laid(this, args[0]);
 			}
-			if(method)
 			else if(!method)
 			{
 				laid.update(args[0]);
