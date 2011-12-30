@@ -45,8 +45,6 @@
 
 	/* Laid prototype */
 
-	Laid.prototype.items = [];
-
 	Laid.prototype.init = function()
 	{
 		var that = this;
@@ -95,6 +93,10 @@
 	{
 		var that = this;
 
+		if(!this.items)
+		{
+			this.items = [];
+		}
 		this.children().each(function(i)
 		{
 			if(that.find(this))
