@@ -4,11 +4,12 @@
 
 	var Laid = function(wrapper, options)
 	{
-		$.data(wrapper, 'laid', this);
+		$.data(this.wrapper = wrapper, 'laid', this);
 
-		this.wrapper = wrapper;
-		this.options = Laid.args(options, Laid.defaults);
-
+		this.options = Laid.args
+		(
+			$.extend({}, options), Laid.defaults
+		);
 		this.init();
 	};
 
@@ -739,7 +740,7 @@
 
 	$.fn.laid = function()
 	{
-		var method, args = $.extend([], arguments);
+		var laid, method, args = $.extend([], arguments);
 
 		if(typeof(args[0]) == 'string')
 		{
@@ -747,18 +748,21 @@
 		}
 		this.each(function()
 		{
-			if(!$.data(this, 'laid'))
+			laid = $.data(this, 'laid');
+
+			if(!laid)
 			{
-				return new Laid(this, $.extend({}, args[0]));
+				method || new Laid(this, args[0]);
 			}
 			if(method)
+			else if(!method)
 			{
-				return API[method].apply
-				(
-					$.data(this, 'laid'), [this].concat(args)
-				);
+				laid.update(args[0]);
 			}
-			return false;
+			else API[method].apply
+			(
+				laid, [this].concat(args)
+			);
 		});
 		return this;
 	};
