@@ -22,8 +22,7 @@
 		duration: 0.4,
 		scale: false,
 		stretch: false,
-		transition: true,
-		wait: false
+		transition: true
 	};
 	Laid.INFINITY = 999999;
 
@@ -105,10 +104,7 @@
 			}
 			that.items.splice(i, 0, new Block(this, that));
 		});
-		if(!this.option('wait'))
-		{
-			this.render();
-		}
+		this.render();
 	};
 	Laid.prototype.find = function(child)
 	{
