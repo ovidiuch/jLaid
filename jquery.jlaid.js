@@ -198,7 +198,7 @@
 	{
 		var height = 0, block = this.stack[0];
 
-		for(var i = 0; i < this.stack.length; block = this.stack[i++])
+		for(var i = 0; i < this.stack.length; block = this.stack[++i])
 		{
 			if(!block.width || !block.height)
 			{
