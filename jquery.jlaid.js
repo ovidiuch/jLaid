@@ -168,9 +168,9 @@
 	};
 	Laid.prototype.render = function()
 	{
-		var t = time(), init = !Boolean(this.lines);
+		var t = time();
 
-		if(init)
+		if(!this.lines)
 		{
 			this.reset();
 		}
@@ -184,7 +184,7 @@
 			{
 				this.append(this.next(block.next));
 			}
-			block.set(init);
+			block.set();
 		};
 		this.adjust();
 
@@ -477,10 +477,8 @@
 
 	Block.prototype.init = function()
 	{
-		var c = $(this.child).css(
-		{
-			position: 'absolute', visibility: 'hidden'
-		});
+		var c = $(this.child).css('position', 'absolute');
+
 		var position = c.position();
 
 		this.x = position.left;
@@ -497,6 +495,7 @@
 			width: this.width,
 			height: this.height
 		});
+		c.css('display', 'none');
 	};
 	Block.prototype.option = function(name)
 	{
@@ -525,28 +524,16 @@
 		}
 		return diff;
 	};
-	Block.prototype.preset = function()
+	Block.prototype.set = function()
 	{
-		if(this.insert && !(this.insert = false))
-		{
-			this.x = this.next.x;
-			this.y = this.next.y;
+		var init = $(this.child).is(':hidden');
 
-			this.width = 0;
-			this.height = 0;
-		}
-		$(this.child).css('visibility', 'visible');
-	};
-	Block.prototype.set = function(init)
-	{
-		this.preset();
-
-		if(!this.width || !this.height)
+		if(init)
 		{
 			this.x = this.next.x;
 			this.y = this.next.y;
 		}
-		var diff = this.diff(this.next), that = this;
+		var diff = this.diff(this.next);
 
 		if(!diff && !init)
 		{
@@ -556,7 +543,7 @@
 
 		var transition = this.option('transition');
 
-		if(!transition || init)
+		if(!transition || !diff)
 		{
 			this.assign
 			(
@@ -567,7 +554,7 @@
 			);
 			return;
 		}
-		var duration = this.option('duration');
+		var duration = this.option('duration'), that = this;
 
 		new Animation(this, duration, transition, function(ratio)
 		{
@@ -754,6 +741,44 @@
 			width: 0, height: 0
 		},
 		true);
+	};
+	API.remove = function(child)
+	{
+		var block = this.find(child);
+
+		if(!block)
+		{
+			return;
+		}
+		this.items.splice
+		(
+			$.inArray(block, this.items), 1
+		);
+		block.remove();
+
+		this.queue();
+	};
+	API.insert = function(child, baby)
+	{
+		if(typeof(baby) == 'function')
+		{
+			baby = baby();
+		}
+		var block = this.find(child);
+
+		$(this.wrapper).prepend(baby);
+
+		if(block)
+		{
+			$(child).after(baby);
+		}
+		this.items.splice($.inArray(block, this.items) + 1, 0,
+		(
+			block = new Block(baby, this)
+		));
+		block.width = block.height = 0;
+
+		this.queue();
 	};
 
 	/* plugin */
