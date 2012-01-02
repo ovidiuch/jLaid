@@ -186,13 +186,30 @@
 			}
 			block.set(init);
 		};
-		$(this.wrapper).height(this.lines[this.lines.length - 1].y);
+		this.adjust();
 
 		if(this.option('debug'))
 		{
 			this.print(time() - t);
 		}
 		this.reset();
+	};
+	Laid.prototype.adjust = function()
+	{
+		var height = 0, block = this.stack[0];
+
+		for(var i = 0; i < this.stack.length; block = this.stack[i++])
+		{
+			if(!block.width || !block.height)
+			{
+				continue;
+			}
+			if(block.y + block.height > height)
+			{
+				height = block.y + block.height;
+			}
+		}
+		$(this.wrapper).height(height);
 	};
 	Laid.prototype.next = function(next)
 	{
@@ -524,6 +541,11 @@
 	{
 		this.preset();
 
+		if(!this.width || !this.height)
+		{
+			this.x = this.next.x;
+			this.y = this.next.y;
+		}
 		var diff = this.diff(this.next), that = this;
 
 		if(!diff && !init)
@@ -590,7 +612,7 @@
 		{
 			left: x, top: y, width: width, height: height
 		});
-		$(this.child).css('display', width || height ? 'block' : 'none');
+		$(this.child).css('display', width && height ? 'block' : 'none');
 	};
 	Block.prototype.destroy = function()
 	{
