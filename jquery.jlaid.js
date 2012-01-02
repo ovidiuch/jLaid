@@ -730,7 +730,13 @@
 
 		if(lock)
 		{
-			this.append(block.next);
+			var next = block.next;
+
+			next.x = Math.min(next.x, this.width - next.width);
+			next.x = Math.max(next.x, 0);
+			next.y = Math.max(next.y, 0);
+
+			this.append(next);
 		}
 		this.queue();
 	};
