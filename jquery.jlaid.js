@@ -786,6 +786,12 @@
 
 		this.queue();
 	};
+	API.sort = function(fn)
+	{
+		this.items.sort(fn);
+
+		this.render();
+	};
 
 	/* plugin */
 
@@ -809,7 +815,7 @@
 			}
 			else API[method].apply
 			(
-				laid, [this].concat(args)
+				laid, this == laid.wrapper ? args : [this].concat(args)
 			);
 		});
 		return this;
