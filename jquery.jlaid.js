@@ -786,9 +786,9 @@
 
 		this.queue();
 	};
-	API.sort = function(fn)
+	API.sort = function(callback)
 	{
-		this.items.sort(fn);
+		this.items.sort(callback);
 
 		this.render();
 	};
