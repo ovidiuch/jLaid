@@ -184,10 +184,13 @@
 			{
 				this.append(this.next(block.next));
 			}
-			block.set();
 		};
 		this.adjust();
 
+		for(var i = 0; i < this.items.length; i++)
+		{
+			this.items[i].set();
+		}
 		if(this.option('debug'))
 		{
 			this.print(time() - t);
