@@ -199,19 +199,28 @@
 	};
 	Laid.prototype.adjust = function()
 	{
-		var height = 0, block = this.stack[0];
+		var width = 0, height = 0, box = this.stack[0];
 
-		for(var i = 0; i < this.stack.length; block = this.stack[++i])
+		this.each(function(i, line)
 		{
-			if(!block.width || !block.height)
+			if(this.width > width)
+			{
+				width = this.width;
+			}
+		});
+		for(var i = 0; i < this.stack.length; box = this.stack[++i])
+		{
+			if(!box.width || !box.height)
 			{
 				continue;
 			}
-			if(block.y + block.height > height)
+			if(box.y + box.height > height)
 			{
-				height = block.y + block.height;
+				height = box.y + box.height;
 			}
 		}
+		this.ratio = this.width / width;
+
 		$(this.wrapper).height(height);
 	};
 	Laid.prototype.next = function(next)
