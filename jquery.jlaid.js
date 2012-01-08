@@ -102,7 +102,7 @@
 			{
 				return;
 			}
-			that.items.splice(i, 0, new Block(this, that));
+			that.items.splice(i, 0, new Item(this, that));
 		});
 		this.render();
 	};
@@ -176,13 +176,13 @@
 		}
 		this.width = $(this.wrapper).width();
 
-		for(var i = 0, block; i < this.items.length; i++)
+		for(var i = 0, item; i < this.items.length; i++)
 		{
-			block = this.items[i];
+			item = this.items[i];
 
-			if($.inArray(block.next, this.stack) == -1)
+			if($.inArray(item.next, this.stack) == -1)
 			{
-				this.append(this.next(block.next));
+				this.append(this.next(item.next));
 			}
 		};
 		this.adjust();
@@ -199,7 +199,7 @@
 	};
 	Laid.prototype.adjust = function()
 	{
-		var width = 0, height = 0, box = this.stack[0];
+		var width = 0, height = 0, block = this.stack[0];
 
 		this.each(function(i, line)
 		{
@@ -208,39 +208,39 @@
 				width = this.width;
 			}
 		});
-		for(var i = 0; i < this.stack.length; box = this.stack[++i])
+		for(var i = 0; i < this.stack.length; block = this.stack[++i])
 		{
-			if(!box.width || !box.height)
+			if(!block.width || !block.height)
 			{
 				continue;
 			}
-			if(box.y + box.height > height)
+			if(block.y + block.height > height)
 			{
-				height = box.y + box.height;
+				height = block.y + block.height;
 			}
 		}
 		this.ratio = this.width / width;
 
 		$(this.wrapper).height(height);
 	};
-	Laid.prototype.next = function(next)
+	Laid.prototype.next = function(block)
 	{
 		var sibling, valid, that = this;
 
-		next.x = next.y = Laid.INFINITY;
+		block.x = block.y = Laid.INFINITY;
 
 		this.each(function(i, line)
 		{
-			if(this.y > next.y)
+			if(this.y > block.y)
 			{
 				return;
 			}
-			if(!this.width || that.check(0, this.y, next.width, next.height))
+			if(!this.width || that.check(0, this.y, block.width, block.height)) // also height?
 			{
-				next.x = 0;
-				next.y = this.y;
+				block.x = 0;
+				block.y = this.y;
 			}
-			this.each(function(j, box)
+			this.each(function(j)
 			{
 				while((sibling = line[++j]))
 				{
@@ -253,22 +253,22 @@
 						return;
 					}
 				}
-				if(this.x + this.width > next.x && line.y == next.y)
+				if(this.x + this.width > block.x && line.y == block.y)
 				{
 					return;
 				}
 				valid = that.check
 				(
-					this.x + this.width, line.y, next.width, next.height
+					this.x + this.width, line.y, block.width, block.height
 				);
 				if(valid)
 				{
-					next.x = this.x + this.width;
-					next.y = line.y;
+					block.x = this.x + this.width;
+					block.y = line.y;
 				}
 			});
 		});
-		return next;
+		return block;
 	};
 	Laid.prototype.check = function(x, y, width, height)
 	{
@@ -282,7 +282,7 @@
 			{
 				return true;
 			}
-			return this.each(function(j, box)
+			return this.each(function(j, block)
 			{
 				if(x >= this.x + this.width)
 				{
@@ -304,14 +304,14 @@
 			});
 		});
 	};
-	Laid.prototype.append = function(box)
+	Laid.prototype.append = function(block)
 	{
 		var indices = [], that = this;
 
-		this.stack.push(box);
+		this.stack.push(block);
 
-		indices.push(this.line(box.y));
-		indices.push(this.line(box.y + box.height));
+		indices.push(this.line(block.y));
+		indices.push(this.line(block.y + block.height));
 
 		for(var i = 0, j, line; i < indices.length; i++)
 		{
@@ -325,35 +325,35 @@
 			{
 				if(this.inline(that.stack[j], indices[i]))
 				{
-					line.box(that.stack[j]);
+					line.block(that.stack[j]);
 				}
 			}
 		}
 		this.each(function(i, line)
 		{
-			if(that.inline(box, i))
+			if(that.inline(block, i))
 			{
-				this.box(box);
+				this.block(block);
 			}
 		});
 	};
-	Laid.prototype.inline = function(box, i)
+	Laid.prototype.inline = function(block, i)
 	{
 		var line = this.lines[i];
 
-		if(line.y >= box.y + box.height)
+		if(line.y >= block.y + block.height)
 		{
 			return false;
 		}
-		if(line.y < box.y)
+		if(line.y < block.y)
 		{
-			if(line.width >= box.x + box.width)
+			if(line.width >= block.x + block.width)
 			{
 				return false;
 			}
-			while(this.lines[i++].y < box.y)
+			while(this.lines[i++].y < block.y)
 			{
-				if(this.lines[i].width > box.x + box.width)
+				if(this.lines[i].width > block.x + block.width)
 				{
 					return false;
 				}
@@ -397,7 +397,7 @@
 			,
 			true);
 
-			this.each(function(j, box)
+			this.each(function(j, block)
 			{
 				that.log
 				(
@@ -444,19 +444,19 @@
 		}
 		return true;
 	};
-	Line.prototype.box = function(box)
+	Line.prototype.block = function(block)
 	{
 		var index = 0;
 
 		this.each(function(j)
 		{
-			if(this == box)
+			if(this == block)
 			{
 				index = -1;
 
 				return false;
 			}
-			if(this.x <= box.x)
+			if(this.x <= block.x)
 			{
 				index = j + 1;
 			}
@@ -464,30 +464,71 @@
 		});
 		if(index != -1)
 		{
-			if(box.x + box.width > this.width)
+			if(block.x + block.width > this.width)
 			{
-				this.width = box.x + box.width;
+				this.width = block.x + block.width;
 			}
-			this.splice(index, 0, box);
+			this.splice(index, 0, block);
 		}
 	};
 
 	/* Block constructor */
 
-	var Block = function(child, laid)
+	var Block = function(params) // test undefined params a bit...
+	{
+		this.update(params);
+	};
+
+	/* Block prototype */
+
+	Block.prototype.update = function(block)
+	{
+		this.x = block.x;
+		this.y = block.y;
+
+		this.width = block.width;
+		this.height = block.height;
+
+		return this;
+	};
+	Block.prototype.diff = function(block)
+	{
+		var diff = {};
+
+		diff.x = this.x - block.x;
+		diff.y = this.y - block.y;
+
+		diff.width = this.width - block.width;
+		diff.height = this.height - block.height;
+
+		if(!diff.x
+		&& !diff.y
+		&& !diff.width
+		&& !diff.height)
+		{
+			return false;
+		}
+		return diff;
+	};
+
+	/* Item constructor */
+
+	var Item = function(child, laid)
 	{
 		if(!(this.child = child))
 		{
 			return;
 		}
-		$.data(child, 'laid', (this.laid = laid));
+		$.data(child, 'laid', this.laid = laid);
 
 		this.init();
 	};
 
-	/* Block prototype */
+	/* Item prototype */
 
-	Block.prototype.init = function()
+	Item.prototype = $.extend({}, Block.prototype);
+
+	Item.prototype.init = function()
 	{
 		var c = $(this.child).css('position', 'absolute');
 
@@ -502,50 +543,36 @@
 		this.h = this.width - c.width();
 		this.v = this.height - c.height();
 
-		this.next = $.extend({}, this.original =
-		{
-			width: this.width,
-			height: this.height
-		});
+		this.next = new Block
+		(
+			this.original = new Block(this)
+		);
 		c.css('display', 'none');
 	};
-	Block.prototype.option = function(name)
+	Item.prototype.option = function(name)
 	{
 		return this.laid.option(name, this.child);
 	};
-	Block.prototype.update = function(box)
+	Item.prototype.preset = function()
 	{
-		Laid.args(this, box, true);
-	};
-	Block.prototype.diff = function(box)
-	{
-		var diff = {};
-
-		diff.x = box.x - this.x;
-		diff.y = box.y - this.y;
-
-		diff.width = box.width - this.width;
-		diff.height = box.height - this.height;
-
-		if(!diff.x
-		&& !diff.y
-		&& !diff.width
-		&& !diff.height)
+		if(!$(this.child).is(':hidden'))
 		{
 			return false;
 		}
-		return diff;
-	};
-	Block.prototype.set = function()
-	{
-		var init = $(this.child).is(':hidden');
+		this.x = this.next.x;
+		this.y = this.next.y;
 
-		if(init)
-		{
-			this.x = this.next.x;
-			this.y = this.next.y;
-		}
-		var diff = this.diff(this.next);
+		this.current = this.transform(this);
+
+		return true;
+	};
+	Item.prototype.set = function()
+	{
+		var init = this.preset();
+
+		var next = this.transform(this.next);
+
+		var diff = next.diff(this.current);
 
 		if(!diff && !init)
 		{
@@ -557,13 +584,8 @@
 
 		if(!transition || !diff)
 		{
-			this.assign
-			(
-				this.x,
-				this.y,
-				this.width - this.h,
-				this.height - this.v
-			);
+			this.assign(this.current.update(next));
+
 			return;
 		}
 		var duration = this.option('duration'), that = this;
@@ -572,16 +594,51 @@
 		{
 			ratio = 1 - ratio;
 
-			that.assign
-			(
-				that.x - (diff.x * ratio),
-				that.y - (diff.y * ratio),
-				that.width - (diff.width * ratio) - that.h,
-				that.height - (diff.height * ratio) - that.v
-			);
+			that.assign(that.current.update(
+			{
+				x: next.x - diff.x * ratio,
+				y: next.y - diff.y * ratio,
+				width: next.width - diff.width * ratio,
+				height: next.height - diff.height * ratio
+			}));
 		});
 	};
-	Block.prototype.remove = function()
+	Item.prototype.transform = function(block)
+	{
+		if(!this.option('stretch'))
+		{
+			return block;
+		}
+		var ratio = this.laid.ratio;
+
+		var b = new Block(block);
+
+		b.x = Math.round(block.x * ratio);
+
+		b.width = -b.x + Math.min
+		(
+			(block.x + block.width) * ratio, this.laid.width
+		);
+		return b;
+	};
+	Item.prototype.assign = function(block)
+	{
+		var width = block.width - this.h;
+		var height = block.height - this.v;
+
+		width = Math.max(width, 0);
+		height = Math.max(height, 0);
+
+		$(this.child).css(
+		{
+			left: block.x, top: block.y, width: width, height: height
+		});
+		$(this.child).css
+		(
+			'display', width && height ? 'block' : 'none'
+		);
+	};
+	Item.prototype.remove = function()
 	{
 		this.next.width = 0;
 		this.next.height = 0;
@@ -602,18 +659,7 @@
 		},
 		this.option('duration') * 1000);
 	};
-	Block.prototype.assign = function(x, y, width, height)
-	{
-		width = Math.max(width, 0);
-		height = Math.max(height, 0);
-
-		$(this.child).css(
-		{
-			left: x, top: y, width: width, height: height
-		});
-		$(this.child).css('display', width && height ? 'block' : 'none');
-	};
-	Block.prototype.destroy = function()
+	Item.prototype.destroy = function()
 	{
 		$(this.child).remove();
 	};
@@ -716,33 +762,33 @@
 
 	/* API */
 
-	var API = Laid.fn = {};
+	var API = Laid.fn = {}; // Test API methods
 
 	API.reset = function(child)
 	{
-		var block = this.find(child);
+		var item = this.find(child);
 
-		if(!block)
+		if(!item)
 		{
 			return;
 		}
-		Laid.args(block.next, block.original, true);
+		Laid.args(item.next, item.original, true);
 
 		this.queue();
 	};
 	API.set = function(child, args, lock)
 	{
-		var block = this.find(child);
+		var item = this.find(child);
 
-		if(!block)
+		if(!item)
 		{
 			return;
 		}
-		Laid.args(block.next, args, true);
+		Laid.args(item.next, args, true);
 
 		if(lock)
 		{
-			var next = block.next;
+			var next = item.next;
 
 			next.x = Math.min(next.x, this.width - next.width);
 			next.x = Math.max(next.x, 0);
@@ -762,17 +808,17 @@
 	};
 	API.remove = function(child)
 	{
-		var block = this.find(child);
+		var item = this.find(child);
 
-		if(!block)
+		if(!item)
 		{
 			return;
 		}
 		this.items.splice
 		(
-			$.inArray(block, this.items), 1
+			$.inArray(item, this.items), 1
 		);
-		block.remove();
+		item.remove();
 
 		this.queue();
 	};
@@ -782,19 +828,19 @@
 		{
 			baby = baby();
 		}
-		var block = this.find(child);
+		var item = this.find(child);
 
 		$(this.wrapper).prepend(baby);
 
-		if(block)
+		if(item)
 		{
 			$(child).after(baby);
 		}
-		this.items.splice($.inArray(block, this.items) + 1, 0,
+		this.items.splice($.inArray(item, this.items) + 1, 0,
 		(
-			block = new Block(baby, this)
+			item = new Item(baby, this)
 		));
-		block.width = block.height = 0;
+		item.width = item.height = 0;
 
 		this.queue();
 	};
