@@ -235,7 +235,7 @@
 			{
 				return;
 			}
-			if(!this.width || that.check(0, this.y, block.width, block.height)) // also height?
+			if(!this.width || that.check(0, this.y, block.width, block.height))
 			{
 				block.x = 0;
 				block.y = this.y;
@@ -474,7 +474,7 @@
 
 	/* Block constructor */
 
-	var Block = function(params) // test undefined params a bit...
+	var Block = function(params)
 	{
 		this.update(params);
 	};
@@ -584,7 +584,7 @@
 
 		if(!transition || !diff)
 		{
-			this.assign(this.current.update(next));
+			this.assign(next);
 
 			return;
 		}
@@ -594,16 +594,16 @@
 		{
 			ratio = 1 - ratio;
 
-			that.assign(that.current.update(
+			that.assign(
 			{
 				x: next.x - diff.x * ratio,
 				y: next.y - diff.y * ratio,
 				width: next.width - diff.width * ratio,
 				height: next.height - diff.height * ratio
-			}));
+			});
 		});
 	};
-	Item.prototype.transform = function(block)
+	Item.prototype.transform = function(block) // add scaling
 	{
 		if(!this.option('stretch'))
 		{
@@ -623,6 +623,8 @@
 	};
 	Item.prototype.assign = function(block)
 	{
+		this.current.update(block);
+
 		var width = block.width - this.h;
 		var height = block.height - this.v;
 
