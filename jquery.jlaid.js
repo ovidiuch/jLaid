@@ -764,8 +764,20 @@
 
 	/* API */
 
-	var API = Laid.fn = {}; // Test API methods
+	var API = Laid.fn = {};
 
+	API.render = function(args)
+	{
+		this.update(args || {});
+
+		this.render();
+	};
+	API.sort = function(callback)
+	{
+		this.items.sort(callback);
+
+		this.render();
+	};
 	API.reset = function(child)
 	{
 		var item = this.find(child);
@@ -830,6 +842,10 @@
 		{
 			baby = baby();
 		}
+		if(!baby)
+		{
+			return;
+		}
 		var item = this.find(child);
 
 		$(this.wrapper).prepend(baby);
@@ -845,12 +861,6 @@
 		item.width = item.height = 0;
 
 		this.queue();
-	};
-	API.sort = function(callback)
-	{
-		this.items.sort(callback);
-
-		this.render();
 	};
 
 	/* plugin */
