@@ -603,22 +603,26 @@
 			});
 		});
 	};
-	Item.prototype.transform = function(block) // add scaling
+	Item.prototype.transform = function(block) // Check Safari
 	{
-		if(!this.option('stretch'))
+		if(!this.option('stretch') && !this.option('scale'))
 		{
 			return block;
 		}
-		var ratio = this.laid.ratio;
-
-		var b = new Block(block);
+		var b = new Block(block), ratio = this.laid.ratio;
 
 		b.x = Math.round(block.x * ratio);
 
 		b.width = -b.x + Math.min
 		(
-			(block.x + block.width) * ratio, this.laid.width
+			Math.round((block.x + block.width) * ratio), this.laid.width
 		);
+		if(this.option('scale'))
+		{
+			b.y = Math.round(block.y * ratio);
+
+			b.height = -b.y + Math.round((block.y + block.height) * ratio);
+		}
 		return b;
 	};
 	Item.prototype.assign = function(block)
