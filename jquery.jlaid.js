@@ -226,6 +226,8 @@
 				width = this.width;
 			}
 		});
+		this.ratio = this.width / (this.limit = width);
+
 		for(var i = 0; i < this.stack.length; block = this.stack[++i])
 		{
 			if(!block.width || !block.height)
@@ -237,8 +239,6 @@
 				height = block.y + block.height;
 			}
 		}
-		this.ratio = this.width / width;
-
 		if(this.option('scale'))
 		{
 			height = Math.round(height * this.ratio);
@@ -814,7 +814,7 @@
 		{
 			return;
 		}
-		Laid.args(item.next, item.original, true);
+		item.next.update(item.original);
 
 		this.queue();
 	};
@@ -826,13 +826,13 @@
 		{
 			return;
 		}
-		Laid.args(item.next, args, true);
+		item.next.update(args);
 
 		if(lock)
 		{
 			var next = item.next;
 
-			next.x = Math.min(next.x, this.width - next.width);
+			next.x = Math.min(next.x, this.limit - next.width);
 			next.x = Math.max(next.x, 0);
 			next.y = Math.max(next.y, 0);
 
