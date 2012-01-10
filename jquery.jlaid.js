@@ -561,11 +561,6 @@
 	{
 		var c = $(this.child).css('position', 'absolute');
 
-		var position = c.position();
-
-		this.x = position.left;
-		this.y = position.top;
-
 		this.width = c.outerWidth();
 		this.height = c.outerHeight();
 
