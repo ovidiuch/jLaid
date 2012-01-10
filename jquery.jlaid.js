@@ -207,7 +207,7 @@
 		}
 		for(var i = 0; i < this.items.length; i++)
 		{
-			this.items[i].set();
+			this.items[i].lay();
 		}
 		if(this.option('debug'))
 		{
@@ -590,7 +590,7 @@
 
 		return true;
 	};
-	Item.prototype.set = function()
+	Item.prototype.lay = function()
 	{
 		var init = this.preset();
 
@@ -673,7 +673,7 @@
 		this.next.width = 0;
 		this.next.height = 0;
 
-		this.set();
+		this.lay();
 
 		if(!this.option('transition'))
 		{
