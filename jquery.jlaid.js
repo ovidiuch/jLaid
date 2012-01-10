@@ -54,10 +54,14 @@
 		};
 		$(this.wrapper).css('position', 'relative');
 
-		$(window).resize(function()
+		this.frame = $(window).width();
+
+		var resize = function()
 		{
 			that.presize();
-		});
+		};
+		window.setInterval(resize, 13);
+
 		this.index();
 	};
 	Laid.prototype.update = function(options, handle)
@@ -139,6 +143,10 @@
 		{
 			return;
 		}
+		if(this.frame == (this.frame = $(window).width()))
+		{
+			return;
+		}
 		var that = this;
 
 		this.resizing = window.setTimeout(function()
@@ -172,11 +180,13 @@
 		{
 			this.reset();
 		}
-		t = t || time();
+		if(!t)
+		{
+			this.frame = $(window).width();
 
+			t = time();
+		}
 		this.width = $(this.wrapper).width();
-
-		var size = $(window).width();
 
 		for(var i = 0, item; i < this.items.length; i++)
 		{
@@ -189,7 +199,7 @@
 		};
 		this.adjust();
 
-		if(size != $(window).width())
+		if(this.frame > (this.frame = $(window).width()))
 		{
 			this.render(t);
 
@@ -229,6 +239,10 @@
 		}
 		this.ratio = this.width / width;
 
+		if(this.option('scale'))
+		{
+			height = Math.round(height * this.ratio);
+		}
 		$(this.wrapper).height(height);
 	};
 	Laid.prototype.next = function(block)
