@@ -627,7 +627,7 @@
 			});
 		});
 	};
-	Item.prototype.transform = function(block) // Check Safari
+	Item.prototype.transform = function(block)
 	{
 		if(!this.option('stretch') && !this.option('scale'))
 		{
