@@ -166,15 +166,17 @@
 			that.render();
 		});
 	};
-	Laid.prototype.render = function()
+	Laid.prototype.render = function(t)
 	{
-		var t = time();
-
-		if(!this.lines)
+		if(!this.lines || t)
 		{
 			this.reset();
 		}
+		t = t || time();
+
 		this.width = $(this.wrapper).width();
+
+		var size = $(window).width();
 
 		for(var i = 0, item; i < this.items.length; i++)
 		{
@@ -187,6 +189,12 @@
 		};
 		this.adjust();
 
+		if(size != $(window).width())
+		{
+			this.render(t);
+
+			return;
+		}
 		for(var i = 0; i < this.items.length; i++)
 		{
 			this.items[i].set();
