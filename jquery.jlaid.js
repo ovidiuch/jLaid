@@ -871,7 +871,7 @@
 
 	$.fn.laid = function()
 	{
-		var laid, method, args = $.extend([], arguments);
+		var laid, method, args = Array.prototype.slice.call(arguments);
 
 		if(typeof(args[0]) == 'string')
 		{
