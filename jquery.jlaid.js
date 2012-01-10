@@ -501,16 +501,23 @@
 		this.update(params);
 	};
 
+	/* Block static */
+
+	Block.PROPERTIES = ['x', 'y', 'width', 'height'];
+
 	/* Block prototype */
 
 	Block.prototype.update = function(block)
 	{
-		this.x = block.x;
-		this.y = block.y;
+		for(var i = 0, property; i < Block.PROPERTIES.length; i++)
+		{
+			property = Block.PROPERTIES[i];
 
-		this.width = block.width;
-		this.height = block.height;
-
+			if(block[property] != undefined)
+			{
+				this[property] = block[property];
+			}
+		}
 		return this;
 	};
 	Block.prototype.diff = function(block)
