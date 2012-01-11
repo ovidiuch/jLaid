@@ -629,11 +629,13 @@
 	};
 	Item.prototype.transform = function(block)
 	{
+		var b = new Block(block);
+
 		if(!this.option('stretch') && !this.option('scale'))
 		{
-			return block;
+			return b;
 		}
-		var b = new Block(block), ratio = this.laid.ratio;
+		var ratio = this.laid.ratio;
 
 		b.x = Math.round(block.x * ratio);
 
