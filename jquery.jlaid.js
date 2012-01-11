@@ -186,7 +186,7 @@
 
 			t = time();
 		}
-		this.width = $(this.wrapper).width();
+		this.limit = $(this.wrapper).width();
 
 		for(var i = 0, item; i < this.items.length; i++)
 		{
@@ -217,31 +217,37 @@
 	};
 	Laid.prototype.adjust = function()
 	{
-		var width = 0, height = 0, block = this.stack[0];
+		this.width = this.height = 0;
+
+		var that = this;
 
 		this.each(function(i, line)
 		{
-			if(this.width > width)
+			if(this.width > that.width)
 			{
-				width = this.width;
+				that.width = this.width;
 			}
 		});
-		this.ratio = this.width / (this.limit = width);
+		this.ratio = this.limit / this.width;
 
-		for(var i = 0; i < this.stack.length; block = this.stack[++i])
+		for(var i = 0, block; i < this.stack.length; i++)
 		{
+			block = this.stack[i];
+
 			if(!block.width || !block.height)
 			{
 				continue;
 			}
-			if(block.y + block.height > height)
+			if(block.y + block.height > this.height)
 			{
-				height = block.y + block.height;
+				this.height = block.y + block.height;
 			}
 		}
+		var height = this.height;
+
 		if(this.option('scale'))
 		{
-			height = Math.round(height * this.ratio);
+			height = Math.round(this.height * this.ratio);
 		}
 		$(this.wrapper).height(height);
 	};
@@ -294,7 +300,7 @@
 	};
 	Laid.prototype.check = function(x, y, width, height)
 	{
-		if(x && x + width > this.width)
+		if(x && x + width > this.limit)
 		{
 			return false;
 		}
@@ -641,7 +647,7 @@
 
 		b.width = -b.x + Math.min
 		(
-			Math.round((block.x + block.width) * ratio), this.laid.width
+			Math.round((block.x + block.width) * ratio), this.laid.limit
 		);
 		if(this.option('scale'))
 		{
@@ -834,7 +840,7 @@
 		{
 			var next = item.next;
 
-			next.x = Math.min(next.x, this.limit - next.width);
+			next.x = Math.min(next.x, this.width - next.width);
 			next.x = Math.max(next.x, 0);
 			next.y = Math.max(next.y, 0);
 
