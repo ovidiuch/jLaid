@@ -604,9 +604,14 @@
 
 		var diff = next.diff(this.current);
 
-		if(!diff && !init)
+		if(!diff)
 		{
-			return;
+			Animation.cancel(this);
+
+			if(!init)
+			{
+				return;
+			}
 		}
 		this.update(this.next);
 
@@ -744,18 +749,23 @@
 		{
 			this.init();
 		}
-		for(var i = 0; i < this.stack.length; i++)
-		{
-			if(this.stack[i].id === animation.id)
-			{
-				this.stack.splice(i, 1);
+		this.cancel(animation.id);
 
-				break;
-			}
-		}
 		this.stack.push(animation);
 
 		animation.frame(time());
+	};
+	Animation.cancel = function(id)
+	{
+		for(var i = 0; i < this.stack.length; i++)
+		{
+			if(this.stack[i].id === id)
+			{
+				this.stack.splice(i, 1);
+
+				return;
+			}
+		}
 	};
 	Animation.frame = function(x, t)
 	{
@@ -897,6 +907,50 @@
 		item.width = item.height = 0;
 
 		this.queue();
+	};
+	API.retract = function(child)
+	{
+		var item = this.find(child);
+
+		if(!item)
+		{
+			return;
+		}
+		item.lay();
+
+		var prev = Number($(child).css('z-index'));
+
+		$(child).css('z-index', prev == 3 ? 2 : 1);
+	};
+	API.expand = function(child, args)
+	{
+		var item = this.find(child);
+
+		if(!item)
+		{
+			return;
+		}
+		var prev = new Block(item.next);
+
+		var next = item.next.update(args);
+
+		next.x = Math.min(next.x, this.width - next.width);
+		next.x = Math.max(next.x, 0);
+		next.y = Math.min(next.y, this.height - next.height);
+		next.y = Math.max(next.y, 0);
+
+		item.lay();
+
+		item.next.update(prev);
+
+		for(var i = 0; i < this.items.length; i++)
+		{
+			if(this.items[i].child != child)
+			{
+				API.retract.call(this, this.items[i].child);
+			}
+		}
+		$(child).css('z-index', 3);
 	};
 
 	/* plugin */
