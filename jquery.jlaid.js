@@ -600,7 +600,7 @@
 	{
 		var init = this.preset();
 
-		var next = this.transform(this.next);
+		var next = this.transform(this.update(this.next));
 
 		var diff = next.diff(this.current);
 
@@ -613,8 +613,6 @@
 				return;
 			}
 		}
-		this.update(this.next);
-
 		var transition = this.option('transition');
 
 		if(!transition || !diff)
