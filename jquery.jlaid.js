@@ -920,7 +920,7 @@
 
 		$(child).css('z-index', prev == 3 ? 2 : 1);
 	};
-	API.expand = function(child, args)
+	API.expand = function(child, args, center)
 	{
 		var item = this.find(child);
 
@@ -932,6 +932,13 @@
 
 		var next = item.next.update(args);
 
+		if(center)
+		{
+			var diff = next.diff(prev);
+
+			next.x -= Math.round(diff.width / 2);
+			next.y -= Math.round(diff.height / 2);
+		}
 		next.x = Math.min(next.x, this.width - next.width);
 		next.x = Math.max(next.x, 0);
 		next.y = Math.min(next.y, this.height - next.height);
