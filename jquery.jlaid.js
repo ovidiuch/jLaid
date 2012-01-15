@@ -749,8 +749,10 @@
 		}
 		this.cancel(animation.id);
 
-		this.stack.push(animation);
-
+		if(animation.b > animation.a)
+		{
+			this.stack.push(animation);
+		}
 		animation.frame(time());
 	};
 	Animation.cancel = function(id)
@@ -788,8 +790,10 @@
 
 	Animation.prototype.frame = function(time)
 	{
-		var ratio = Math.min(1, (time - this.a) / (this.b - this.a));
-
+		var ratio = this.b <= this.a ? 1 : Math.min
+		(
+			(time - this.a) / (this.b - this.a), 1
+		);
 		if(this.transition)
 		{
 			ratio = this.transition(ratio);
