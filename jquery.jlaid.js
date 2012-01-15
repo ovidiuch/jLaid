@@ -19,7 +19,7 @@
 	{
 		debug: false,
 		delay: 200,
-		duration: 0.4,
+		duration: 0.3,
 		scale: false,
 		stretch: false,
 		transition: true
