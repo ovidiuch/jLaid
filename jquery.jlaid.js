@@ -943,9 +943,9 @@
 			next.x -= Math.round(diff.width / 2);
 			next.y -= Math.round(diff.height / 2);
 		}
-		next.x = Math.min(next.x, this.width - next.width);
+		//next.x = Math.min(next.x, this.width - next.width);
 		next.x = Math.max(next.x, 0);
-		next.y = Math.min(next.y, this.height - next.height);
+		//next.y = Math.min(next.y, this.height - next.height);
 		next.y = Math.max(next.y, 0);
 
 		item.lay();

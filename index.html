@@ -49,7 +49,7 @@ input {
 	height: 80px;
 }
 .grid .inner {
-	border: 1px solid #a8a8a8;
+	border: 1px solid rgba(0, 0, 0, 0.3);
 	border-radius: 6px;
 	background: #fafafa;
 	box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.08);
@@ -89,7 +89,7 @@ input {
 
 .grid .input-container {
 	height: 64px;
-	margin: 0 10px 10px 10px;
+	margin: 10px;
 	padding: 2px 6px;
 	border: 1px solid #a8a8a8;
 	border-radius: 4px;
@@ -108,6 +108,34 @@ input {
 	text-align: right;
 }
 
+.grid .buttons-container {
+	height: 80px;
+	margin: 10px 10px 0 10px;
+}
+.grid .buttons-container a {
+	display: block;
+	float: left;
+	width: 50%;
+	height: 50%;
+}
+
+/* img block */
+
+.grid li.img {
+	width: 240px;
+	height: 240px;
+}
+.grid li.img div.inner {
+	border: 1px solid rgba(255, 255, 255, 1);
+}
+.img-wrapper {
+	padding: 50% 0 0 50%;
+}
+img {
+	display: block;
+	margin: -320px 0 0 -213px;
+}
+
 	</style>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
@@ -123,9 +151,9 @@ Items.init = function()
 {
 	/* Toggles */
 
-	this.setupToggle('#block-options-duration', 170);
-	this.setupToggle('#block-options-delay', 170);
-	this.setupToggle('#block-options-transition', 250);
+	this.setupToggle('#block-options-duration', 180);
+	this.setupToggle('#block-options-delay', 180);
+	this.setupToggle('#block-options-transition', 180);
 };
 Items.setupToggle = function(selector, height)
 {
@@ -266,7 +294,7 @@ $(function()
 {
 	$('ul.grid').laid(
 	{
-		//stretch: true
+		scale: true
 	});
 
 	Items.init();
@@ -303,6 +331,19 @@ $(function()
 				<div class="container">
 					<p><span class="type">bool, fn</span> options.<span class="keyword">transition</span><span class="value"></span></p>
 					<p class="description">Formula transformation callback, <em>false</em> for none and <em>true</em> for linear.</p>
+				</div>
+				<div class="buttons-container">
+					<a href="#">none</a>
+					<a href="#">linear</a>
+					<a href="#">easeInExpo</a>
+					<a href="#">easeInBack</a>
+				</div>
+			</div>
+		</li>
+		<li id="block-photo-flower" class="img">
+			<div class="inner">
+				<div class="img-wrapper">
+					<img src="flower.jpg" alt="Flower">
 				</div>
 			</div>
 		</li>
