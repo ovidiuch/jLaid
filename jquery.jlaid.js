@@ -961,9 +961,24 @@
 			next.x -= Math.round(diff.width / 2);
 			next.y -= Math.round(diff.height / 2);
 		}
-		//next.x = Math.min(next.x, this.width - next.width);
+		var scale = { x: 1, y: 1 };
+
+		if(this.option('scale'))
+		{
+			scale.x = scale.y = this.ratio;
+		}
+		else if(this.option('stretch'))
+		{
+			scale.x = this.ratio;
+		}
+		var bottom = $(window).scrollTop() + $(window).height();
+
+		bottom -= $(child).offset().top - item.current.y;
+
+		next.x = Math.min(next.x, this.limit / scale.x - next.width);
 		next.x = Math.max(next.x, 0);
-		//next.y = Math.min(next.y, this.height - next.height);
+
+		next.y = Math.min(next.y, bottom / scale.y - next.height);
 		next.y = Math.max(next.y, 0);
 
 		item.lay();
