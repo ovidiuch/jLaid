@@ -23,7 +23,7 @@ input {
 	outline: none;
 }
 
-/* grid structure */
+/* grid */
 
 .grid {
 	margin: 10px 0 0 10px;
@@ -32,51 +32,48 @@ input {
 	line-height: 16px;
 	list-style-type: none;
 }
+
+/* item */
+
 .grid li {
 	float: left;
+	width: 240px;
+	height: 80px;
 	padding: 0 10px 10px 0;
 }
+
+/* item inner */
+
 .grid .inner {
 	width: 100%;
 	height: 100%;
-	overflow: hidden;
-}
-
-/* grid look */
-
-.grid li {
-	width: 240px;
-	height: 80px;
-}
-.grid .inner {
 	border: 1px solid rgba(0, 0, 0, 0.3);
 	border-radius: 6px;
 	background: #fafafa;
 	box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.08);
-	cursor: default;
+	overflow: hidden;
 }
 .grid .inner:hover {
 	background: #f1f1f1;
 }
-.grid .container {
-	height: 80px;
-}
+
+/* item text */
 
 .grid p:first-child {
-	padding: 8px 10px 0 10px;
-	line-height: 16px;
+	padding: 0 10px;
+	line-height: 2.2857em;
 	font-size: 14px;
 	white-space: nowrap;
 }
 .grid p.description {
-	padding: 8px 16px 12px 16px;
+	padding: 0 16px;
 	color: #888;
-	line-height: 18px;
+	line-height: 1.5em;
 }
 
 .grid p .keyword {
 	padding: 0 4px;
-	font-size: 16px;
+	font-size: 1.1426em;
 	font-weight: bold;
 }
 .grid p .type {
@@ -87,39 +84,7 @@ input {
 	color: #999;
 }
 
-.grid .input-container {
-	height: 64px;
-	margin: 10px;
-	padding: 2px 6px;
-	border: 1px solid #a8a8a8;
-	border-radius: 4px;
-	background: #fff;
-	box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.08);
-}
-.grid input {
-	float: left;
-	width: 100%;
-	height: 64px;
-	border: 0;
-	font-size: 42px;
-	line-height: 64px;
-}
-.grid input.number {
-	text-align: right;
-}
-
-.grid .buttons-container {
-	height: 80px;
-	margin: 10px 10px 0 10px;
-}
-.grid .buttons-container a {
-	display: block;
-	float: left;
-	width: 50%;
-	height: 50%;
-}
-
-/* img block */
+/* img item */
 
 .grid li.img {
 	width: 240px;
@@ -142,113 +107,6 @@ img {
 	<script src="jquery.jlaid.js"></script>
 
 	<script>
-
-/* Items */
-
-var Items = {};
-
-Items.init = function()
-{
-	/* Toggles */
-
-	this.setupToggle('#block-options-duration', 180);
-	this.setupToggle('#block-options-delay', 180);
-	this.setupToggle('#block-options-transition', 180);
-};
-Items.setupToggle = function(selector, height)
-{
-	$(selector).find('.inner').click(function()
-	{
-		$(this).parent().laid('toggle', { height: height });
-	});
-	$(selector).find('a,.input-container').click(function(e)
-	{
-		e.stopPropagation();
-	});
-};
-
-/* Fields */
-
-var Fields = {};
-
-Fields.init = function()
-{
-	/* Prevent TAB */
-
-	$('input').keydown(function(e)
-	{
-		if(e.keyCode == 9)
-		{
-			e.preventDefault();
-		}
-	});
-
-	/* Numbers */
-
-	$('input.number').keypress(function(e)
-	{
-		var key = e.charCode, char = String.fromCharCode(key);
-
-		if(!key || !char)
-		{
-			return;
-		}
-		if(char.match(/^[0-9\.]+$/))
-		{
-			if(char != '.' || $(this).val().indexOf('.') == -1)
-			{
-				return;
-			}
-		}
-		e.preventDefault();
-	});
-	$('input.number').change(function()
-	{
-		$(this).val(Number($(this).val()));
-	});
-
-	/* Duration field */
-
-	$('#block-options-duration input').each(function()
-	{
-		var input = $(this);
-
-		var refresh = function()
-		{
-			var val = Number(input.val()) || 0;
-
-			input.parents('li').find('p:first span.value').html(val);
-
-			input.parents('ul').laid('render', { duration: val });
-		}
-		$(this).keyup(function()
-		{
-			refresh();
-		});
-		refresh();
-	});
-
-	/* Delay field */
-
-	$('#block-options-delay input').each(function()
-	{
-		var input = $(this);
-
-		var refresh = function()
-		{
-			var val = Number(input.val()) || 0;
-
-			input.parents('li').find('p:first span.value').html(val);
-
-			input.parents('ul').laid('render', { delay: val });
-		}
-		$(this).keyup(function()
-		{
-			refresh();
-		});
-		refresh();
-	});
-};
 
 /* Transitions */
 
@@ -285,20 +143,24 @@ $.laid.fn.toggle = function(child, args)
 
 		return;
 	}
-	$.laid.fn.set.call(this, child, args || {}, true);
+	$.laid.fn.set.call(this, child, args || {}, true); // change this to stretch...
 
 	item.opened = true;
 };
+
+/* Run */
 
 $(function()
 {
 	$('ul.grid').laid(
 	{
-		scale: true
+		scale: true,
+		respond: function(scale)
+		{
+			$(this.child).find('p:first-child').css('font-size', 14 * scale.x);
+			$(this.child).find('p.description').css('font-size', 12 * scale.x);
+		}
 	});
-
-	Items.init();
-	Fields.init();
 });
 	</script>
 </head>
@@ -306,38 +168,20 @@ $(function()
 	<ul class="grid">
 		<li id="block-options-duration">
 			<div class="inner">
-				<div class="container">
-					<p><span class="type">float</span> options.<span class="keyword">duration</span><span class="value"></span></p>
-					<p class="description">Duration of the transition, in seconds.</p>
-				</div>
-				<div class="input-container">
-					<input class="number" type="text" name="duration" value="0.3">
-				</div>
+				<p><span class="type">float</span> options.<span class="keyword">duration</span><span class="value"></span></p>
+				<p class="description">Duration of the transition, in seconds.</p>
 			</div>
 		</li>
 		<li id="block-options-delay">
 			<div class="inner">
-				<div class="container">
-					<p><span class="type">int</span> options.<span class="keyword">delay</span><span class="value"></span></p>
-					<p class="description">Applied lag for resize events, in milliseconds.</p>
-				</div>
-				<div class="input-container">
-					<input class="number" type="text" name="duration" value="200">
-				</div>
+				<p><span class="type">int</span> options.<span class="keyword">delay</span><span class="value"></span></p>
+				<p class="description">Applied lag for resize events, in milliseconds.</p>
 			</div>
 		</li>
 		<li id="block-options-transition">
 			<div class="inner">
-				<div class="container">
-					<p><span class="type">bool, fn</span> options.<span class="keyword">transition</span><span class="value"></span></p>
-					<p class="description">Formula transformation callback, <em>false</em> for none and <em>true</em> for linear.</p>
-				</div>
-				<div class="buttons-container">
-					<a href="#">none</a>
-					<a href="#">linear</a>
-					<a href="#">easeInExpo</a>
-					<a href="#">easeInBack</a>
-				</div>
+				<p><span class="type">bool, fn</span> options.<span class="keyword">transition</span><span class="value"></span></p>
+				<p class="description">Formula transformation callback, <em>false</em> for none and <em>true</em> for linear.</p>
 			</div>
 		</li>
 		<li id="block-photo-flower" class="img">
