@@ -3,6 +3,8 @@
 <head>
 	<meta charset="UTF-8">
 
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 	<title>jLaid</title>
 
 	<style type="text/css">
@@ -37,7 +39,7 @@ input {
 
 .grid li {
 	float: left;
-	width: 240px;
+	width: 260px;
 	height: 80px;
 	padding: 0 10px 10px 0;
 }
@@ -60,20 +62,21 @@ input {
 /* item text */
 
 .grid p:first-child {
-	padding: 0 10px;
-	line-height: 2.2857em;
-	font-size: 14px;
+	padding: 0 4%; /* 10.4px @ 100% */
+	line-height: 2.25em; /* 36px @ 100% */
+	font-size: 16px;
 	white-space: nowrap;
 }
 .grid p.description {
-	padding: 0 16px;
+	margin: -0.5% 0 0 0; /* 1.3px @ 100% */
+	padding: 0 6%; /* 15.6px @ 100% */
 	color: #888;
-	line-height: 1.5em;
+	font-size: 12px;
+	line-height: 1.5em; /* 18px @ 100% */
 }
 
 .grid p .keyword {
 	padding: 0 4px;
-	font-size: 1.1426em;
 	font-weight: bold;
 }
 .grid p .type {
@@ -87,8 +90,8 @@ input {
 /* img item */
 
 .grid li.img {
-	width: 240px;
-	height: 240px;
+	width: 170px;
+	height: 170px;
 }
 .grid li.img div.inner {
 	border: 1px solid rgba(255, 255, 255, 1);
@@ -157,7 +160,7 @@ $(function()
 		scale: true,
 		respond: function(scale)
 		{
-			$(this.child).find('p:first-child').css('font-size', 14 * scale.x);
+			$(this.child).find('p:first-child').css('font-size', 16 * scale.x);
 			$(this.child).find('p.description').css('font-size', 12 * scale.x);
 		}
 	});
