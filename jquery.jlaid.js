@@ -20,6 +20,7 @@
 		debug: false,
 		delay: 200,
 		duration: 0.3,
+		respond: null,
 		scale: false,
 		stretch: false,
 		transition: true
@@ -545,6 +546,15 @@
 		}
 		return diff;
 	};
+	Block.prototype.scale = function(block)
+	{
+		var scale = {};
+
+		scale.x = this.width / block.width;
+		scale.y = this.height / block.height;
+
+		return scale;
+	};
 
 	/* Item constructor */
 
@@ -678,6 +688,14 @@
 		(
 			'display', width && height ? 'block' : 'none'
 		);
+		this.respond(this.option('respond'));
+	};
+	Item.prototype.respond = function(fn)
+	{
+		if(typeof(fn) == 'function')
+		{
+			fn.call(this, this.current.scale(this.original));
+		}
 	};
 	Item.prototype.remove = function()
 	{
