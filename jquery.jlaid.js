@@ -19,9 +19,9 @@
 	{
 		debug: false,
 		delay: 200,
-		duration: 0.3,
+		duration: 0.2,
 		respond: null,
-		scale: false,
+		scale: true,
 		stretch: false,
 		transition: true,
 		wait: false
