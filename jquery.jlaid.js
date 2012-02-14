@@ -256,7 +256,49 @@
 		}
 		$(this.wrapper).height(height);
 	};
-	Laid.prototype.next = function(block)
+	Laid.prototype.append = function(item, fixed)
+	{
+		var block = item.outer(item.next);
+
+		if(!fixed)
+		{
+			this.position(block);
+
+			item.next.x = block.x;
+			item.next.y = block.y;
+		}
+		var indices = [], that = this;
+
+		this.stack.push(block);
+
+		indices.push(this.line(block.y));
+		indices.push(this.line(block.y + block.height));
+
+		for(var i = 0, j, line; i < indices.length; i++)
+		{
+			if(indices[i] == -1)
+			{
+				continue;
+			}
+			line = this.lines[indices[i]];
+
+			for(j = 0; j < this.stack.length; j++)
+			{
+				if(this.inline(that.stack[j], indices[i]))
+				{
+					line.block(that.stack[j]);
+				}
+			}
+		}
+		this.each(function(i, line)
+		{
+			if(that.inline(block, i))
+			{
+				this.block(block);
+			}
+		});
+	};
+	Laid.prototype.position = function(block)
 	{
 		var sibling, valid, that = this;
 
@@ -334,48 +376,6 @@
 				}
 				return false;
 			});
-		});
-	};
-	Laid.prototype.append = function(item, fixed)
-	{
-		var block = item.outer(item.next);
-
-		if(!fixed)
-		{
-			this.next(block);
-
-			item.next.x = block.x;
-			item.next.y = block.y;
-		}
-		var indices = [], that = this;
-
-		this.stack.push(block);
-
-		indices.push(this.line(block.y));
-		indices.push(this.line(block.y + block.height));
-
-		for(var i = 0, j, line; i < indices.length; i++)
-		{
-			if(indices[i] == -1)
-			{
-				continue;
-			}
-			line = this.lines[indices[i]];
-
-			for(j = 0; j < this.stack.length; j++)
-			{
-				if(this.inline(that.stack[j], indices[i]))
-				{
-					line.block(that.stack[j]);
-				}
-			}
-		}
-		this.each(function(i, line)
-		{
-			if(that.inline(block, i))
-			{
-				this.block(block);
-			}
 		});
 	};
 	Laid.prototype.inline = function(block, i)
