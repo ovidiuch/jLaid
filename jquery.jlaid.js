@@ -197,9 +197,9 @@
 		{
 			item = this.items[i];
 
-			if($.inArray(item.next, this.stack) == -1)
+			if($.inArray(item.outline, this.stack) == -1)
 			{
-				this.append(this.next(item.next));
+				this.append(item);
 			}
 		};
 		this.adjust();
@@ -301,7 +301,6 @@
 				}
 			});
 		});
-		return block;
 	};
 	Laid.prototype.check = function(x, y, width, height)
 	{
@@ -337,8 +336,17 @@
 			});
 		});
 	};
-	Laid.prototype.append = function(block)
+	Laid.prototype.append = function(item, fixed)
 	{
+		var block = item.outer(item.next);
+
+		if(!fixed)
+		{
+			this.next(block);
+
+			item.next.x = block.x;
+			item.next.y = block.y;
+		}
 		var indices = [], that = this;
 
 		this.stack.push(block);
@@ -573,6 +581,10 @@
 		this.init();
 	};
 
+	/* Item static */
+
+	Item.SIDES = ['top', 'bottom', 'left', 'right'];
+
 	/* Item prototype */
 
 	Item.prototype = $.extend({}, Block.prototype);
@@ -581,17 +593,37 @@
 	{
 		var c = $(this.child).css('position', 'absolute');
 
+		this.bounds();
+
+		this.outer(this.next = new Block
+		(
+			this.original = new Block(this)
+		));
+		c.css('display', 'none');
+	};
+	Item.prototype.bounds = function()
+	{
+		var c = $(this.child);
+
 		this.width = c.outerWidth();
 		this.height = c.outerHeight();
 
-		this.h = this.width - c.width();
-		this.v = this.height - c.height();
+		this.margin = {};
 
-		this.next = new Block
-		(
-			this.original = new Block(this)
-		);
-		c.css('display', 'none');
+		for(var i = 0, side; i < Item.SIDES.length; i++)
+		{
+			side = Item.SIDES[i];
+
+			this.margin[side] = Number
+			(
+				c.css('margin-' + side).replace(/[^0-9-]+/g, '')
+			);
+		}
+		this.padding =
+		{
+			x: this.width - c.width(),
+			y: this.height - c.height()
+		};
 	};
 	Item.prototype.option = function(name)
 	{
@@ -614,8 +646,10 @@
 	{
 		var init = this.preset();
 
-		var next = this.transform(this.update(this.next));
-
+		var next = this.transform
+		(
+			this.update(this.next)
+		);
 		var diff = next.diff(this.current);
 
 		if(!diff)
@@ -650,6 +684,15 @@
 			});
 		});
 	};
+	Item.prototype.outer = function(block)
+	{
+		var b = new Block(block);
+
+		b.width += this.margin.left + this.margin.right;
+		b.height += this.margin.top + this.margin.bottom;
+
+		return (this.outline = b);
+	};
 	Item.prototype.transform = function(block)
 	{
 		var b = new Block(block);
@@ -678,8 +721,8 @@
 	{
 		this.current.update(block);
 
-		var width = block.width - this.h;
-		var height = block.height - this.v;
+		var width = block.width - this.padding.x;
+		var height = block.height - this.padding.y;
 
 		width = Math.max(width, 0);
 		height = Math.max(height, 0);
@@ -878,7 +921,7 @@
 			next.x = Math.max(next.x, 0);
 			next.y = Math.max(next.y, 0);
 
-			this.append(next);
+			this.append(item, true);
 		}
 		this.queue();
 	};
