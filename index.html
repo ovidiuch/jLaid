@@ -19,7 +19,7 @@ html, body {
 	background: #d1d1d1;
 }
 body {
-	padding: 10px;
+	padding: 20px;
 }
 input {
 	outline: none;
@@ -28,7 +28,6 @@ input {
 /* grid */
 
 .grid {
-	margin: 10px 0 0 10px;
 	font-family: sans-serif;
 	font-size: 12px;
 	line-height: 16px;
@@ -39,16 +38,9 @@ input {
 
 .grid li {
 	float: left;
-	width: 260px;
-	height: 80px;
-	padding: 0 10px 10px 0;
-}
-
-/* item inner */
-
-.grid .inner {
-	width: 100%;
-	height: 100%;
+	width: 258px;
+	height: 78px;
+	margin: 0 0 10px 10px;
 	border: 1px solid rgba(0, 0, 0, 0.3);
 	border-radius: 6px;
 	background: #fafafa;
@@ -95,51 +87,45 @@ input {
 /* main item */
 
 .grid li.main {
-	width: 440px;
-	height: 170px;
+	width: 438px;
+	height: 168px;
 }
 
 /* option item */
 
-.grid li.option { }
-
-	.grid li.option .inner {
-		border: 1px solid rgba(0, 0, 0, 0.25);
-		background: #eaeaea;
-	}
+.grid li.option {
+	border: 1px solid rgba(0, 0, 0, 0.25);
+	background: #eaeaea;
+}
 
 /* char item */
 
 .grid li.char {
-	width: 80px;
-	height: 80px;
+	width: 78px;
+	height: 78px;
+	color: #444;
+	font-size: 54px;
+	line-height: 1.55em;
+	line-height: 88px;
+	text-align: center;
+	cursor: pointer;
 }
-	.grid li.char .inner {
-		color: #444;
-		font-size: 54px;
-		line-height: 1.55em;
-		line-height: 93px;
-		text-align: center;
-		cursor: pointer;
-	}
-	.grid li.char .inner:hover {
-		background: #f1f1f1;
-	}
+.grid li.char:hover {
+	background: #f1f1f1;
+}
 
-	.grid li.add .inner {
-		color: #ff9900;
-	}
-	.grid li.remove .inner {
-		color: #ff4400;
-	}
+.grid li.add {
+	color: #ff9900;
+}
+.grid li.remove {
+	color: #ff4400;
+}
 
 /* img item */
 
 .grid li.img {
-	width: 170px;
-	height: 170px;
-}
-.grid li.img div.inner {
+	width: 168px;
+	height: 168px;
 	border-color: #fff;
 	box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.15);
 	cursor: pointer;
@@ -212,7 +198,7 @@ $.laid.fn.toggle = function(child, args)
 
 		return;
 	}
-	$.laid.fn.set.call(this, child, args || {}, true); // change this to stretch...
+	$.laid.fn.set.call(this, child, args || {}, true);
 	//$.laid.fn.expand.call(this, child, args || {}, true);
 
 	item.opened = true;
@@ -226,8 +212,9 @@ $(function()
 
 	$('ul.grid').laid(
 	{
-		wait: true,
-		//scale: false
+		//debug: true,
+		//scale: false,
+		wait: true
 	})
 	$('ul.grid li.text').laid(
 	{
@@ -241,22 +228,22 @@ $(function()
 	});
 	$('ul.grid').laid('render');
 
-	$('ul.grid li.add .inner').click(function()
+	$('ul.grid li.add').click(function()
 	{
-		var child = $('<li class="remove char"><div class="inner">✖</div></li>"');
+		var child = $('<li class="remove char">✖</li>"');
 
-		$(this).parent().laid('insert', child[0]);
+		$(this).laid('insert', child[0]);
 
 		child.click(function()
 		{
 			$(this).laid('remove');
 		});
 	});
-	$('ul.grid li.img .inner').click(function()
+	$('ul.grid li.img').click(function()
 	{
-		$(this).parent().laid('toggle',
+		$(this).laid('toggle',
 		{
-			width: 270, height: 270
+			width: 260, height: 260
 		});
 	});
 });
@@ -264,89 +251,72 @@ $(function()
 </head>
 <body>
 	<ul class="grid">
+
 		<li id="block-options-debug" class="text option">
-			<div class="inner">
-				<p><span class="type">bool</span> options.<span class="keyword">debug</span><span class="value">false</span></p>
-				<p class="description">Prints info about arrays and rendering times to browser console.</p>
-			</div>
+			<p><span class="type">bool</span> options.<span class="keyword">debug</span><span class="value">false</span></p>
+			<p class="description">Prints info about arrays and rendering times to browser console.</p>
 		</li>
+
 		<li id="block-options-delay" class="text option">
-			<div class="inner">
-				<p><span class="type">int</span> options.<span class="keyword">delay</span><span class="value">200</span></p>
-				<p class="description">Applied lag for resize events, in milliseconds.</p>
-			</div>
+			<p><span class="type">int</span> options.<span class="keyword">delay</span><span class="value">200</span></p>
+			<p class="description">Applied lag for resize events, in milliseconds.</p>
 		</li>
-		<li id="block-add" class="add char">
-			<div class="inner">✚</div>
-		</li>
+
+		<li id="block-add" class="add char">✚</li>
+
 		<li id="block-options-duration" class="text option">
-			<div class="inner">
-				<p><span class="type">float</span> options.<span class="keyword">duration</span><span class="value">0.2</span></p>
-				<p class="description">Duration of the transition, in seconds.</p>
-			</div>
+			<p><span class="type">float</span> options.<span class="keyword">duration</span><span class="value">0.2</span></p>
+			<p class="description">Duration of the transition, in seconds.</p>
 		</li>
+
 		<li id="block-options-respond" class="text option">
-			<div class="inner">
-				<p><span class="type">fn</span> options.<span class="keyword">respond</span><span class="value">function</span></p>
-				<p class="description">Callback function with scaling info. Key in providing a responsive layout.</p>
-			</div>
+			<p><span class="type">fn</span> options.<span class="keyword">respond</span><span class="value">function</span></p>
+			<p class="description">Callback function with scaling info. Key in providing a responsive layout.</p>
 		</li>
-		<li id="block-add" class="add char">
-			<div class="inner">✚</div>
-		</li>
+
+		<li id="block-add" class="add char">✚</li>
+
 		<li id="block-options-scale" class="text option">
-			<div class="inner">
-				<p><span class="type">bool</span> options.<span class="keyword">scale</span><span class="value">true</span></p>
-				<p class="description">Scales items to fit parent container. Alters CSS width and height of items.</p>
-			</div>
+			<p><span class="type">bool</span> options.<span class="keyword">scale</span><span class="value">true</span></p>
+			<p class="description">Scales items to fit parent container. Alters CSS width and height of items.</p>
 		</li>
+
 		<li id="block-options-stretch" class="text option">
-			<div class="inner">
-				<p><span class="type">bool</span> options.<span class="keyword">stretch</span><span class="value">false</span></p>
-				<p class="description">Stretches items to fit parent container. Like <em>scale</em>, but only horizontally.</p>
-			</div>
+			<p><span class="type">bool</span> options.<span class="keyword">stretch</span><span class="value">false</span></p>
+			<p class="description">Stretches items to fit parent container. Like <em>scale</em>, but only horizontally.</p>
 		</li>
-		<li id="block-add" class="add char">
-			<div class="inner">✚</div>
-		</li>
+		<li id="block-add" class="add char">✚</li>
+
 		<li id="block-options-transition" class="text option">
-			<div class="inner">
-				<p><span class="type">bool, fn</span> options.<span class="keyword">transition</span><span class="value">true</span></p>
-				<p class="description">Formula transformation callback. <em>false</em> for none and <em>true</em> for linear.</p>
-			</div>
+			<p><span class="type">bool, fn</span> options.<span class="keyword">transition</span><span class="value">true</span></p>
+			<p class="description">Formula transformation callback. <em>false</em> for none and <em>true</em> for linear.</p>
 		</li>
+
 		<li id="block-options-wait" class="text option">
-			<div class="inner">
-				<p><span class="type">bool</span> options.<span class="keyword">wait</span><span class="value">false</span></p>
-				<p class="description">Pauses init rendering. Useful when applying different options between items.</p>
-			</div>
+			<p><span class="type">bool</span> options.<span class="keyword">wait</span><span class="value">false</span></p>
+			<p class="description">Pauses init rendering. Useful when applying different options between items.</p>
 		</li>
-		<li id="block-add" class="add char">
-			<div class="inner">✚</div>
-		</li>
+
+		<li id="block-add" class="add char">✚</li>
+
 		<!---->
 		<li id="block-main" class="text main">
-			<div class="inner">
-				<p>jQuery.fn.<span class="keyword">laid</span>( <span class="type">object</span> options )</p>
-				<h1>jLaid &ndash; <strong>Responsive grid layout</strong>.</h1>
-			</div>
+			<p>jQuery.fn.<span class="keyword">laid</span>( <span class="type">object</span> options )</p>
+			<h1>jLaid &ndash; <strong>Responsive grid layout</strong>.</h1>
 		</li>
-		<li id="block-add" class="add char">
-			<div class="inner">✚</div>
-		</li>
+
+		<li id="block-add" class="add char">✚</li>
+
 		<li id="block-photo-flower" class="img">
-			<div class="inner">
-				<div class="txt-wrapper">
-					<p>&raquo; Click to expand &laquo;</p>
-				</div>
+			<div class="txt-wrapper">
+				<p>&raquo; Click to expand &laquo;</p>
 				<div class="img-wrapper">
 					<img src="flower.jpg" alt="Flower">
 				</div>
 			</div>
 		</li>
-		<li id="block-add" class="add char">
-			<div class="inner">✚</div>
-		</li>
+
+		<li id="block-add" class="add char">✚</li>
 	</ul>
 </body>
 </html>
