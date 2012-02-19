@@ -28,7 +28,7 @@ input {
 /* grid */
 
 .grid {
-	/*margin: -6px 0 0 -6px;*/
+	margin: -6px 0 0 -6px;
 	font-family: sans-serif;
 	font-size: 12px;
 	line-height: 16px;
@@ -192,15 +192,15 @@ $.laid.fn.toggle = function(child, args)
 	}
 	if(item.opened)
 	{
-		//$.laid.fn.retract.call(this, child);
-		$.laid.fn.reset.call(this, child);
+		$.laid.fn.retract.call(this, child);
+		//$.laid.fn.reset.call(this, child);
 
 		item.opened = false;
 
 		return;
 	}
-	$.laid.fn.set.call(this, child, args || {}, true);
-	//$.laid.fn.expand.call(this, child, args || {}, true);
+	//$.laid.fn.set.call(this, child, args || {}, true);
+	$.laid.fn.expand.call(this, child, args || {}, true);
 
 	item.opened = true;
 };

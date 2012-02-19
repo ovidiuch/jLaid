@@ -17,6 +17,7 @@
 
 	Laid.defaults =
 	{
+		children: '*',
 		debug: false,
 		delay: 200,
 		duration: 0.2,
@@ -52,7 +53,10 @@
 
 		this.children = function()
 		{
-			return $(that.wrapper).find('> li');
+			return $(that.wrapper).children
+			(
+				this.option('children')
+			);
 		};
 		$(this.wrapper).css('position', 'relative');
 
