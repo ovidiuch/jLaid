@@ -258,7 +258,7 @@
 	};
 	Laid.prototype.append = function(item, fixed)
 	{
-		var block = item.outer(item.next);
+		var block = item.outline = item.outer(item.next);
 
 		if(!fixed)
 		{
@@ -595,7 +595,7 @@
 
 		this.bounds();
 
-		this.outer(this.next = new Block
+		this.outline = this.outer(this.next = new Block
 		(
 			this.original = new Block(this)
 		));
@@ -691,7 +691,7 @@
 		b.width += this.margin.left + this.margin.right;
 		b.height += this.margin.top + this.margin.bottom;
 
-		return (this.outline = b);
+		return b;
 	};
 	Item.prototype.transform = function(block)
 	{
@@ -915,9 +915,9 @@
 
 		if(lock)
 		{
-			var next = item.next;
+			var next = item.next, outline = item.outer(next);
 
-			next.x = Math.min(next.x, this.width - next.width);
+			next.x = Math.min(next.x, this.width - outline.width);
 			next.x = Math.max(next.x, 0);
 			next.y = Math.max(next.y, 0);
 
@@ -1018,14 +1018,12 @@
 		{
 			scale.x = this.ratio;
 		}
-		var bottom = $(window).scrollTop() + $(window).height();
+		var outline = item.outer(next);
 
-		bottom -= $(child).offset().top - item.current.y;
-
-		next.x = Math.min(next.x, this.limit / scale.x - next.width);
+		next.x = Math.min(next.x, this.limit / scale.x - outline.width);
 		next.x = Math.max(next.x, 0);
 
-		next.y = Math.min(next.y, bottom / scale.y - next.height);
+		next.y = Math.min(next.y, this.height - outline.height);
 		next.y = Math.max(next.y, 0);
 
 		item.lay();
