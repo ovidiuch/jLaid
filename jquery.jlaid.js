@@ -1,3 +1,11 @@
+/*!
+ * jLaid v1.0
+ * http://skidding.github.com/jlaid
+ *
+ * MIT Licensed
+ *
+ * (c) 2012 @skidding Ovidiu Chereches
+ */
 ;(function($, window, document, undefined)
 {
 	/* Layout Grid constructor */
