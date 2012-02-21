@@ -20,6 +20,8 @@ html, body {
 }
 body {
 	padding: 20px;
+	font-size: 12px;
+	line-height: 16px;
 }
 input {
 	outline: none;
@@ -30,46 +32,30 @@ input {
 .grid {
 	margin: -6px 0 0 -6px;
 	font-family: sans-serif;
-	font-size: 12px;
-	line-height: 16px;
 	list-style-type: none;
 }
 
-/* item */
-
-.grid li {
-	float: left;
-	width: 262px;
-	height: 82px;
-	margin: 6px 0 0 6px;
-	border: 1px solid rgba(0, 0, 0, 0.3);
-	border-radius: 6px;
-	background: #fafafa;
-	box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-	overflow: hidden;
-}
-
-/* item text */
+/* text */
 
 .grid p:first-child {
-	padding: 0 4%; /* 10.4px @ 100% */
-	line-height: 2.25em; /* 36px @ 100% */
+	padding: 0 4%; /* 10.4px */
 	font-size: 16px;
+	line-height: 2.25em; /* 36px */
 	white-space: nowrap;
 }
 .grid p.description {
-	margin: -0.5% 0 0 0; /* 1.3px @ 100% */
-	padding: 0 6%; /* 15.6px @ 100% */
+	margin: -0.5% 0 0 0; /* 1.3px */
+	padding: 0 6%; /* 15.6px */
 	color: #888;
 	font-size: 12px;
-	line-height: 1.5em; /* 18px @ 100% */
+	line-height: 1.5em; /* 18px */
 }
 .grid h1 {
-	margin: 0 4%; /* 10.4px @ 100% */
+	margin: 0 4%; /* 10.4px */
 	border-bottom: 1px solid #bbb;
 	font-size: 24px;
 	font-weight: normal;
-	line-height: 2.5em; /* 60px @ 100% */
+	line-height: 2.5em; /* 60px */
 	text-align: center;
 }
 
@@ -85,30 +71,31 @@ input {
 	color: #999;
 }
 
-/* main item */
+/* item */
 
-.grid li.main {
-	width: 442px;
-	height: 172px;
+.grid li {
+	float: left;
+	width: 262px;
+	height: 82px;
+	margin: 6px 0 0 6px;
+	border: 1px solid #acacac;
+	border-radius: 6px;
+	background: #fafafa;
+	box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
 }
 
-/* option item */
+/* item.option */
 
 .grid li.option {
-	border: 1px solid rgba(0, 0, 0, 0.25);
 	background: #eaeaea;
 }
 
-/* char item */
+/* item.char */
 
 .grid li.char {
 	width: 82px;
 	height: 82px;
-	color: #444;
-	font-size: 54px;
-	line-height: 1.55em;
-	line-height: 88px;
-	text-align: center;
 	cursor: pointer;
 }
 .grid li.char:hover {
@@ -122,40 +109,40 @@ input {
 	color: #ff4400;
 }
 
-/* img item */
+/* item.main */
+
+.grid li.main {
+	width: 442px;
+	height: 172px;
+}
+
+/* item.img */
 
 .grid li.img {
 	width: 172px;
 	height: 172px;
 	border-color: #fff;
+	background-position: center center;
 	box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
 	cursor: pointer;
 }
-.grid li.img .img-wrapper {
-	padding: 50% 0 0 50%;
-}
-.grid li.img .img-wrapper img {
-	display: block;
-	margin: -320px 0 0 -213px;
-}
-.grid li.img .txt-wrapper {
-	float: left;
-	position: relative;
-	width: 100%;
-	height: 100%;
-}
-.grid li.img .txt-wrapper p {
-	position: absolute;
-	bottom: 0;
-	width: 100%;
-	padding: 4px 0;
-	border-bottom-left-radius: 5px;
-	border-bottom-right-radius: 5px;
-	background: rgba(0, 0, 0, 0.5);
-	color: #fcfcfc;
-	line-height: 24px;
-	text-align: center;
-}
+	.grid li.img div.caption {
+		position: absolute;
+		bottom: 0;
+		width: 100%;
+		height: 32px;
+		border-bottom-left-radius: 5px;
+		border-bottom-right-radius: 5px;
+		background: rgba(0, 0, 0, 0.5);
+		overflow: hidden;
+	}
+		.grid li.img div.caption p {
+			color: #fcfcfc;
+			font-size: 16px;
+			line-height: 32px;
+			text-align: center;
+		}
+
 	</style>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
@@ -190,7 +177,7 @@ $.laid.fn.toggle = function(child, args)
 	{
 		return;
 	}
-	if(item.opened)
+	if(item.opened) // not good when it retracts on resize
 	{
 		$.laid.fn.retract.call(this, child);
 		//$.laid.fn.reset.call(this, child);
@@ -253,71 +240,69 @@ $(function()
 <body>
 	<ul class="grid">
 
-		<li id="block-options-debug" class="text option">
+		<li class="text option">
 			<p><span class="type">bool</span> options.<span class="keyword">debug</span><span class="value">false</span></p>
 			<p class="description">Prints info about arrays and rendering times to browser console.</p>
 		</li>
 
-		<li id="block-options-delay" class="text option">
+		<li class="text option">
 			<p><span class="type">int</span> options.<span class="keyword">delay</span><span class="value">200</span></p>
 			<p class="description">Applied lag for resize events, in milliseconds.</p>
 		</li>
 
-		<li id="block-add" class="add char">✚</li>
+		<li class="add char">✚</li>
 
-		<li id="block-options-duration" class="text option">
+		<li class="text option">
 			<p><span class="type">float</span> options.<span class="keyword">duration</span><span class="value">0.2</span></p>
 			<p class="description">Duration of the transition, in seconds.</p>
 		</li>
 
-		<li id="block-options-respond" class="text option">
+		<li class="text option">
 			<p><span class="type">fn</span> options.<span class="keyword">respond</span><span class="value">function</span></p>
 			<p class="description">Callback function with scaling info. Key in providing a responsive layout.</p>
 		</li>
 
-		<li id="block-add" class="add char">✚</li>
+		<li class="add char">✚</li>
 
-		<li id="block-options-scale" class="text option">
+		<li class="text option">
 			<p><span class="type">bool</span> options.<span class="keyword">scale</span><span class="value">true</span></p>
 			<p class="description">Scales items to fit parent container. Alters CSS width and height of items.</p>
 		</li>
 
-		<li id="block-options-stretch" class="text option">
+		<li class="text option">
 			<p><span class="type">bool</span> options.<span class="keyword">stretch</span><span class="value">false</span></p>
 			<p class="description">Stretches items to fit parent container. Like <em>scale</em>, but only horizontally.</p>
 		</li>
-		<li id="block-add" class="add char">✚</li>
+		<li class="add char">✚</li>
 
-		<li id="block-options-transition" class="text option">
+		<li class="text option">
 			<p><span class="type">bool, fn</span> options.<span class="keyword">transition</span><span class="value">true</span></p>
 			<p class="description">Formula transformation callback. <em>false</em> for none and <em>true</em> for linear.</p>
 		</li>
 
-		<li id="block-options-wait" class="text option">
+		<li class="text option">
 			<p><span class="type">bool</span> options.<span class="keyword">wait</span><span class="value">false</span></p>
 			<p class="description">Pauses init rendering. Useful when applying different options between items.</p>
 		</li>
 
-		<li id="block-add" class="add char">✚</li>
+		<li class="add char">✚</li>
 
 		<!---->
-		<li id="block-main" class="text main">
+		<li class="text main">
 			<p>jQuery.fn.<span class="keyword">laid</span>( <span class="type">object</span> options )</p>
 			<h1>jLaid &ndash; <strong>Responsive grid layout</strong>.</h1>
 		</li>
 
-		<li id="block-add" class="add char">✚</li>
+		<li class="add char">✚</li>
 
-		<li id="block-photo-flower" class="img">
-			<div class="txt-wrapper">
-				<p>&raquo; Click to expand &laquo;</p>
-				<div class="img-wrapper">
-					<img src="flower.jpg" alt="Flower">
-				</div>
+		<li class="img" style="background-image: url('flower.jpg');">
+			<div class="caption">
+				<p>&laquo; Click to expand &raquo;</p>
+				<p>&raquo; Click to retract &laquo;</p>
 			</div>
 		</li>
 
-		<li id="block-add" class="add char">✚</li>
+		<li class="add char">✚</li>
 	</ul>
 </body>
 </html>
