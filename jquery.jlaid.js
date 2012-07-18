@@ -103,7 +103,7 @@
 		if(options[name] !== undefined)
 		{
 			return options[name];
-		};
+		}
 		return this.options[name];
 	};
 	Laid.prototype.index = function()
@@ -213,7 +213,7 @@
 			{
 				this.append(item);
 			}
-		};
+		}
 		this.adjust();
 
 		if(this.frame > (this.frame = $(window).width()))
@@ -222,9 +222,9 @@
 
 			return;
 		}
-		for(var i = 0; i < this.items.length; i++)
+		for(var j = 0; j < this.items.length; j++)
 		{
-			this.items[i].lay();
+			this.items[j].lay();
 		}
 		if(this.option('debug'))
 		{
@@ -446,8 +446,7 @@
 			(
 				'line #' + (i + 1) + ' [' +
 				this.y + ' ' +
-				this.width + ']'
-			,
+				this.width + ']',
 			true);
 
 			this.each(function(j, block)
@@ -458,8 +457,7 @@
 					this.x + ' ' +
 					this.y + ' ' +
 					this.width + ' ' +
-					this.height + ']'
-				,
+					this.height + ']',
 				true);
 			});
 		});
@@ -544,7 +542,7 @@
 		{
 			property = Block.PROPERTIES[i];
 
-			if(block[property] != undefined)
+			if(block[property] !== undefined)
 			{
 				this[property] = block[property];
 			}
@@ -561,10 +559,7 @@
 		diff.width = this.width - block.width;
 		diff.height = this.height - block.height;
 
-		if(!diff.x
-		&& !diff.y
-		&& !diff.width
-		&& !diff.height)
+		if(!diff.x && !diff.y && !diff.width && !diff.height)
 		{
 			return false;
 		}
@@ -846,7 +841,7 @@
 	};
 	Animation.frame = function(x, t)
 	{
-		if(x != undefined)
+		if(x !== undefined)
 		{
 			this.stack.splice(x, 1);
 		}
